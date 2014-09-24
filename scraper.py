@@ -18,16 +18,12 @@ page = requests.get(root_url + 'lessons.html')
 tree = html.fromstring(page.text)
 
 def get_data():
-    root_url = 'http://software-carpentry.org/'
-    page = requests.get(root_url + 'lessons.html')
-    tree = html.fromstring(page.text)
-
     links = tree.xpath('//ul/li/a')
     lessons = {}
     for item in links:
         href = item.attrib['href']
         title = item.text_content()
-        # if href starts with v4 or v5 then it's a lin to a lesson
+        # if href starts with v4 or v5 then it's a link to a lesson
         result = re.match('^v\d\/', href)
         if result:
             lessons[root_url + href] = title
@@ -58,7 +54,7 @@ def upload_data(data):
     request = urllib2.Request('http://tesstest2.oerc.ox.ac.uk/api/action/package_create')
     request.add_header('Authorization', api)
 
-    # Make the HTTP request - CRASHES HERE
+    # Make the HTTP request - check the apache logs to see the reason for any crashes
     response = urllib2.urlopen(request, data_string)
     assert response.code == 200
 
