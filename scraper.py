@@ -96,8 +96,18 @@ def create_data(data,url):
     created_package = response_dict['result']
     pprint.pprint(created_package)
 
+def create_multiple_entries(data, name):
+    for key in data:
+        upload = {
+            'package_id' : name,
+            'url' : key,
+            'name' : data[key],
+            'format' : 'text/html'
+        }
+        create_data(upload,create_resource)
 
 
 #create_data(get_metadata(),create_package)
-create_data(get_data(),create_resource)
+#create_data(get_data(),create_resource)
+create_multiple_entries(parse_data(),get_metadata()['name'])
 
