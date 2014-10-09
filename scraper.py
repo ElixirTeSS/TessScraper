@@ -12,16 +12,20 @@ import urllib
 import json
 import pprint
 
-create_package = 'http://tesstest2.oerc.ox.ac.uk/api/action/package_create'
-create_resource = 'http://tesstest2.oerc.ox.ac.uk/api/action/resource_create'
+host = 'tess.oerc.ox.ac.uk'
+protocol = 'https'
+create_package = protocol + '://' + host + '/api/3/action/package_create'
+create_resource = protocol + '://' + host + '/api/3/action/resource_create'
 root_url = 'http://software-carpentry.org/'
+owner_org = 'sof'
 
 
 def get_metadata():
     return {
         'name' : 'software_carpentry',
         'title': 'Software carpentry courses',
-        'notes' : 'Uploaded via CKAN API'
+        'notes' : 'Uploaded via CKAN API',
+        'owner_org': owner_org
     }
 
 # There doesn't seem to be much need to parse this at the moment - CKAN seems to be expecting the URL of a resource
@@ -52,15 +56,15 @@ def get_data():
 
 def get_test_metadata():
     return {
-        'name' : 'wibble',
-        'title': 'Some Exciting Example Data',
+        'name' : 'ftang',
+        'title': 'Some More Exciting Example Data',
         'notes' : 'Uploaded via CKAN API'
     }
 
 def get_test_data():
     return {
         'package_id' : get_test_metadata()['name'],
-        'url': 'http://tesstest2.oerc.ox.ac.uk/dataset/' + get_test_metadata()['name'],
+        'url': protocol + '://' + host + '/dataset/' + get_test_metadata()['name'],
         'description': 'Nothing to see here, move along...',
         'name': 'Some test data',
         'format': 'text/plain'
@@ -102,12 +106,14 @@ def create_multiple_entries(data, name):
             'package_id' : name,
             'url' : key,
             'name' : data[key],
+            'description' : 'Uploaded via CKAN API.',
             'format' : 'text/html'
         }
         create_data(upload,create_resource)
 
 
+create_data(get_test_metadata(),create_package)
 #create_data(get_metadata(),create_package)
 #create_data(get_data(),create_resource)
-create_multiple_entries(parse_data(),get_metadata()['name'])
+#create_multiple_entries(parse_data(),get_metadata()['name'])
 
