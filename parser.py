@@ -7,7 +7,7 @@ from training import *
 
 # WORK IN PROGRESS
 # Before going any further, a collection object is required in order to store the tutorials.
-website = ElixirCourseWebsite();
+website = CourseWebsite();
 
 # A script to parse an Excel file of tutorials prior to importing into CKAN.
 # Documentation for the sheet class is here:
@@ -26,6 +26,17 @@ website = ElixirCourseWebsite();
 # N.B. the layout of this file is such that it is best suited for viewing by a human rather than parsing; therefore
 # one will have to carefully loop over the first column to find where entries have been placed and use the index
 # of this to investigate the other columns, counting down the rows therefrom until a blank one is found.
+
+
+# This bit is to get the id of a lesson which matches the passed in name, and return the
+# uuid thereof for the purposes of storage.
+def get_parent_id(name,lessons):
+    for l in reversed(lessons):
+        if l.name == name:
+            return l.id
+    return None
+
+# parse the excel file
 excel_file = 'Template for TeSS_EMBL EBI.xlsx'
 workbook = xlrd.open_workbook(excel_file)
 for sheet in workbook.sheets():
@@ -37,7 +48,6 @@ for sheet in workbook.sheets():
         continue
     if 'face to face course' in title.lower():
         face_to_face = True
-        continue
     print "Title: " + title
     current_row = 1
 
@@ -47,6 +57,9 @@ for sheet in workbook.sheets():
         # Look in courses.py to see the difference between a tutorial and a face-to-face course.
         if face_to_face:
             tut = FaceToFaceCourse()
+            # continue here; simply creating the web courses will do for testing purposes.
+            current_row += 1
+            continue
         else:
             tut = Tutorial()
 
@@ -70,6 +83,8 @@ for sheet in workbook.sheets():
         # print these for now - later, store in a tutorial object
         tut.name = tutorial_name
         tut.url = url
+        if not face_to_face:
+            tut.parent_id = get_parent_id(follows,website.tuition_units)
         #print "Follows: " + follows
 
         # resources may have several entries
@@ -130,31 +145,15 @@ for sheet in workbook.sheets():
             tut.difficulty = sheet.cell_value(current_row,9)
 
         # If this is a tutorial, store it in the website collection:
-        if not face_to_face:
+        if face_to_face:
+            print "F-2-F: " + tut.name
+        else:
             website.tuition_units.append(tut)
+
 
         current_row += 1
 
     print "Web: " + str(website)
     website.list_names()
 
-"""
-    worksheet = workbook.sheets()[0] # 1 for production, 2 for test
-    num_rows = worksheet.nrows - 1
-    #num_cells = worksheet.ncols - 1
-    curr_row = 1 # row 0 is to be discarded
-    print "NUM_ROWS: " + str(num_rows)
-    while curr_row <= num_rows:
-        full_name =  worksheet.cell_value(curr_row,0).encode('utf8')
-        #abbreviation = worksheet.cell_value(curr_row,1)
-        #if not abbreviation:
-        #    abbreviation = "No abbreviation"
-        link = worksheet.cell_value(curr_row,6)
-        if not re.search('biosharing', link):
-            #print str(link.rsplit('/',1)[-1].encode('utf8'))#  + "," + str(contact_details.encode('utf8'))
-            curr_row += 1
-            continue
-        claimed = worksheet.cell_value(curr_row,1).encode('utf8')
-        responded = worksheet.cell_value(curr_row,2).encode('utf8')
-        contact_details = worksheet.cell_value(curr_row,7).encode('utf8')
-"""
+

@@ -3,7 +3,7 @@ __author__ = 'milo'
 import uuid
 
 # a class to define a website containing various elixir uk training materials
-class ElixirCourseWebsite:
+class CourseWebsite:
 
     def __init__(self):
         self.id = uuid.uuid4()
@@ -17,8 +17,17 @@ class ElixirCourseWebsite:
         index = 0
         print "Tutorials for website " + self.name + " at " + self.url + "."
         for unit in self.tuition_units:
-            print str(index) + ": " + unit.name
+            print str(index) + ": " + unit.name + ": " + str(unit.id) + "/" + str(unit.parent_id)
             index += 1
+
+    # CKAN expects some JSON to be sent when creating new objects.
+    def dump(self):
+        data = {'id': str(self.id),
+                'name': self.name,
+                'url': self.url}
+        if self.elixir_uk_sector:
+            data['elixir_uk_sector'] = self.elixir_uk_sector
+        return data
 
     @property
     def name(self):

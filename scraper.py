@@ -5,6 +5,8 @@
 # http://docs.ckan.org/en/latest/api/index.html#example-importing-datasets-with-the-ckan-api
 
 from lxml import html
+from training import *
+
 import requests
 import re
 import urllib2
@@ -19,14 +21,6 @@ create_resource = protocol + '://' + host + '/api/3/action/resource_create'
 root_url = 'http://software-carpentry.org/'
 owner_org = 'sof'
 
-
-def get_metadata():
-    return {
-        'name' : 'software_carpentry',
-        'title': 'Software carpentry courses',
-        'notes' : 'Uploaded via CKAN API',
-        'owner_org': owner_org
-    }
 
 # There doesn't seem to be much need to parse this at the moment - CKAN seems to be expecting the URL of a resource
 # rather than the resource itself.
@@ -44,6 +38,39 @@ def parse_data():
             lessons[root_url + href] = title
 
     return lessons
+
+lessons = parse_data()
+#pprint.pprint(lessons)
+
+
+# store all the tutorials in here
+website = CourseWebsite()
+website.name = "Software Carpentry"
+website.url = root_url + 'lessons.html'
+
+# each individual tutorial
+for key in lessons:
+    course = Tutorial()
+    course.url = key
+    course.name = lessons[key]
+    website.tuition_units.append(course)
+    pprint.pprint(course.dump())
+#website.list_names()
+#pprint.pprint(website.dump())
+
+# Actually upload them. It will be essential to get the name/id of the created dataset in order that resources can be
+# added to it; uploader.do_upload() should return this, but it will have to be parsed here.
+#uploader = CKANUploader()
+#uploader.do_upload(website)
+
+"""
+def get_metadata():
+    return {
+        'name' : 'software_carpentry',
+        'title': 'Software carpentry courses',
+        'notes' : 'Uploaded via CKAN API',
+        'owner_org': owner_org
+    }
 
 def get_data():
     return {
@@ -116,4 +143,4 @@ create_data(get_test_metadata(),create_package)
 #create_data(get_metadata(),create_package)
 #create_data(get_data(),create_resource)
 #create_multiple_entries(parse_data(),get_metadata()['name'])
-
+"""

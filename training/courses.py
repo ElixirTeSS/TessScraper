@@ -1,6 +1,7 @@
 __author__ = 'milo'
 
 import uuid
+import json
 
 # A general class of which tutorials, face-to-face courses &c. are a subclass.
 # All of these will need a name, id, url and so on, so it make sense to subclass
@@ -21,6 +22,20 @@ class TuitionUnit:
         self.doi = None
         self.keywords = []
         self.difficulty = None
+        self.owning_org = None # CKAN owning organisation
+
+    # CKAN expects some JSON to be sent when creating new objects.
+    def dump(self):
+        data = {'id': str(self.id),
+                'name': self.name,
+                'url': self.url,
+                'parent_id': self.parent_id,
+                'doi': self.doi,
+                'keywords': self.keywords,
+                'difficulty': self.difficulty,
+                'owning_org': self.owning_org
+                }
+        return data
 
 
 # 6: Name of author
@@ -34,6 +49,14 @@ class Tutorial(TuitionUnit):
         self.created = None
         self.last_update = None
 
+    def dump(self):
+        data = TuitionUnit.dump(self)
+        data['author'] = self.author
+        data['created'] = self.created
+        data['last_update'] = self.last_update
+        return data
+
+
 # 6: Organisers
 # 7: Date(s) of event
 # 8: Difficulty rating out of 5 stars
@@ -43,4 +66,8 @@ class FaceToFaceCourse(TuitionUnit):
         self.organisers = []
         self.dates = [] # start 0, end 1 ?
 
-
+    def dump(self):
+        data = TuitionUnit.dump(self)
+        data['organisers'] = self.organisers
+        data['dates'] = self.dates
+        return data
