@@ -25,7 +25,8 @@ class CourseWebsite:
     def dump(self):
         data = {'id': str(self.id),
                 'name': self.name,
-                'url': self.url}
+                'url': self.url,
+                'owner_org': self.owning_org}
         if self.elixir_uk_sector:
             data['elixir_uk_sector'] = self.elixir_uk_sector
         return data

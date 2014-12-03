@@ -118,11 +118,11 @@ for key in lessons:
     course.audience = lessons[key]['audience']
     course.keywords = lessons[key]['topics']
     website.tuition_units.append(course)
-    pprint.pprint(course.dump())
-website.list_names()
-pprint.pprint(website.dump())
+    #pprint.pprint(course.dump())
+#website.list_names()
+#pprint.pprint(website.dump())
 
 # Actually upload them. It will be essential to get the name/id of the created dataset in order that resources can be
 # added to it; uploader.do_upload() should return this, but it will have to be parsed here.
-#uploader = CKANUploader()
-#uploader.do_upload(website)
+uploader = CKANUploader(None)
+uploader.create_resource(website.dump())
