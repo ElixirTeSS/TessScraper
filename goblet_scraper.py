@@ -5,7 +5,9 @@
 # http://docs.python-guide.org/en/latest/scenarios/scrape/
 # http://docs.ckan.org/en/latest/api/index.html#example-importing-datasets-with-the-ckan-api
 
-# BROKEN: HTTP error 409 caused by stuff on line 118
+# BROKEN: HTTP error 409
+# [Wed Dec 03 17:26:04 2014] [error] 2014-12-03 17:26:04,746 ERROR [ckan.controllers.api]
+# Validation error: "{'__type': 'Validation Error', 'name': [u'Url must be purely lowercase alphanumeric (ascii) characters and these symbols: -_']}"
 
 
 from bs4 import BeautifulSoup
@@ -125,4 +127,6 @@ for key in lessons:
 # Actually upload them. It will be essential to get the name/id of the created dataset in order that resources can be
 # added to it; uploader.do_upload() should return this, but it will have to be parsed here.
 uploader = CKANUploader(None)
-uploader.create_resource(website.dump())
+pprint.pprint(website.dump())
+dataset = uploader.create_dataset(website.dump())
+pprint.pprint(dataset)

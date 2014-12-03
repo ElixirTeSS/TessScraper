@@ -1,8 +1,10 @@
 __author__ = 'milo'
 
 import uuid
+import os.path
 
-# a class to define a website containing various elixir uk training materials
+# A class to define a website containing various elixir uk training materials.
+# N.B. CKAN seems to expect the URL to be the URL on the CKAN site after uploading.
 class CourseWebsite:
 
     def __init__(self):
@@ -23,10 +25,11 @@ class CourseWebsite:
 
     # CKAN expects some JSON to be sent when creating new objects.
     def dump(self):
-        data = {'id': str(self.id),
-                'name': self.name,
-                'url': self.url,
-                'owner_org': self.owning_org}
+        data = {'name': self.name,
+                #'url': os.path.basename(self.url),
+                'url': 'wibble',
+                'owner_org': self.owning_org,
+                'extras': [{'key':'source','value':self.url}]}
         if self.elixir_uk_sector:
             data['elixir_uk_sector'] = self.elixir_uk_sector
         return data

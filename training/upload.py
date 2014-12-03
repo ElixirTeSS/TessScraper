@@ -24,12 +24,12 @@ class CKANUploader:
     def create_dataset(self,data):
         action = '/api/3/action/package_create'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        self.__do_upload(data,url)
+        return self.__do_upload(data,url)
 
     def create_resource(self,data):
         action = '/api/3/action/resource_create'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        self.__do_upload(data,url)
+        return self.__do_upload(data,url)
 
     def __do_upload(self,data,url):
         # process data to json for uploading
