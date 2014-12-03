@@ -4,6 +4,8 @@
 # http://docs.python-guide.org/en/latest/scenarios/scrape/
 # http://docs.ckan.org/en/latest/api/index.html#example-importing-datasets-with-the-ckan-api
 
+# BROKEN: HTTP error 409 caused by stuff on line 118
+
 from lxml import html
 from training import *
 
@@ -63,7 +65,6 @@ for key in lessons:
 #uploader = CKANUploader()
 #uploader.do_upload(website)
 
-"""
 def get_metadata():
     return {
         'name' : 'software_carpentry',
@@ -116,7 +117,7 @@ def create_data(data,url):
     request.add_header('Authorization', api)
 
     # Make the HTTP request - check the apache logs to see the reason for any crashes
-    response = urllib2.urlopen(request, data_string)
+    response = urllib2.urlopen(request, data_string) # 409
     assert response.code == 200
 
     # Use the json module to load CKAN's response into a dictionary.
@@ -143,4 +144,3 @@ create_data(get_test_metadata(),create_package)
 #create_data(get_metadata(),create_package)
 #create_data(get_data(),create_resource)
 #create_multiple_entries(parse_data(),get_metadata()['name'])
-"""
