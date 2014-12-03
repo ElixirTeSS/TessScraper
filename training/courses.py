@@ -23,6 +23,7 @@ class TuitionUnit:
         self.keywords = []
         self.difficulty = None
         self.owning_org = None # CKAN owning organisation
+        self.audience = []
 
     # CKAN expects some JSON to be sent when creating new objects.
     def dump(self):

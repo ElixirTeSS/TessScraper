@@ -11,6 +11,7 @@ class CourseWebsite:
         self._url = None
         self.elixir_uk_sector = None
         self.tuition_units = []
+        self.owning_org = None
 
 
     def list_names(self):
