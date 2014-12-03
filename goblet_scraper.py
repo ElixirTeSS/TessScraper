@@ -11,6 +11,7 @@
 from bs4 import BeautifulSoup
 from training import *
 
+import datetime
 import requests
 import re
 import urllib2
@@ -27,6 +28,9 @@ owner_org = 'goblet'
 
 def parse_data(page):
     lessons = {}
+    topic_match = re.compile('topic-tags')
+    audience_match = re.compile('audience-tags')
+    portal_match = re.compile('training-portal')
     #page = requests.get(root_url + page)
     #tree = html.fromstring(page.text)
     with open ("goblet.html", "r") as myfile:
@@ -38,28 +42,21 @@ def parse_data(page):
         print "ROW: "
         links = row.find_all('a')
         for link in links:
-            print "LINK: " + link.get('href')
-            print "TEXT: " + str(link.contents[0].encode('utf8','ignore'))
-            #print "TEXT: " + str(link.string)
+            href = link.get('href')
+            text = link.contents[0].encode('utf8','ignore')
+            if topic_match.search(href):
+                print "TOPIC: " + str(href)
+            elif audience_match.search(href):
+                print "AUDIENCE: " + str(href)
+            elif portal_match.search(href):
+                print "PORTAL: " + str(href)
+
         cells = row.find_all('td')
         print "TYPE: " + str(cells[1].get_text().strip())
         stuff = cells[0].get_text().encode('utf8','ignore').strip()
         reldate = stuff.replace(links[0].contents[0].encode('utf8','ignore'),'')
-        print "DATE: " + str(reldate)
-        return_date(reldate)
-
-
-
-    """
-    for row in rows:
-        print "ROW: "
-        cells = row.find_all('td')
-        for cell in cells:
-            print "CELL: "  + str(cell)
-            for contents in cell.children:
-                print "CONTENTS: " + str(contents)
-    """
-
+        date_modified = return_date(reldate)
+        print "DATE: " + str(date_modified)
 
 
     return lessons
@@ -70,7 +67,7 @@ def parse_data(page):
 # with the actual date in it.
 def return_date(datestring):
     parts = datestring.split()
-    print "PARTS: " + str(parts)
+    today = datetime.date.today()
     years = 0
     months = 0
     weeks = 0
@@ -81,20 +78,25 @@ def return_date(datestring):
     day_match = re.compile('day')
 
     if month_match.search(parts[2]):
-        months = parts[1]
+        months = int(parts[1])
     elif year_match.search(parts[2]):
-        years = parts[1]
+        years = int(parts[1])
     elif week_match.search(parts[2]):
-        weeks = parts[1]
+        weeks = int(parts[1])
 
     if month_match.search(parts[4]):
-        months = parts[3]
+        months = int(parts[3])
     elif week_match.search(parts[4]):
-        weeks = parts[3]
+        weeks = int(parts[3])
     elif day_match.search(parts[4]):
-        days = parts[3]
+        days = int(parts[3])
 
-    print "TIME: " + str(years) + "," + str(months) + "," + str(weeks) + "," + str(days)
+    diff = days + (weeks * 7) + (months * 30) + (years * 365)
+    delta = datetime.timedelta(days=diff)
+    earlier = today - delta
+
+    return earlier
+
 
 
 
