@@ -37,8 +37,6 @@ class CKANUploader:
         pprint.pprint(data_string)
 
         # get the api key for authorisation
-        # TODO:
-        # try/catch here....
         error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
         try:
             with open (self.auth, "r") as apifile:

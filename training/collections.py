@@ -27,7 +27,8 @@ class CourseWebsite:
     def dump(self):
         data = {'name': self.name,
                 #'url': os.path.basename(self.url),
-                'url': 'wibble',
+                #'url': 'wibble',
+                'url': str(self.id).encode('ascii','ignore'),
                 'owner_org': self.owning_org,
                 'extras': [{'key':'source','value':self.url}]}
         if self.elixir_uk_sector:
