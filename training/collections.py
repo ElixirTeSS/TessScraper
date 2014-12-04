@@ -9,8 +9,8 @@ class CourseWebsite:
 
     def __init__(self):
         self.id = uuid.uuid4()
-        self._name = None
-        self._url = None
+        self.name = None
+        self.url = None
         self.elixir_uk_sector = None
         self.tuition_units = []
         self.owning_org = None
@@ -28,9 +28,10 @@ class CourseWebsite:
         data = {'name': self.name,
                 #'url': os.path.basename(self.url),
                 #'url': 'wibble',
-                'url': str(self.id).encode('ascii','ignore'),
+                #'url': str(self.id).encode('ascii','ignore'),
+                'url': self.url,
                 'owner_org': self.owning_org,
-                'extras': [{'key':'source','value':self.url}]}
+                'extras': [{'key':'origin','value':self.url}]}
         if self.elixir_uk_sector:
             data['elixir_uk_sector'] = self.elixir_uk_sector
         return data

@@ -33,8 +33,9 @@ class CKANUploader:
 
     def __do_upload(self,data,url):
         # process data to json for uploading
+        print "Trying URL: " + url
         data_string = urllib.quote(json.dumps(data))
-        pprint.pprint(data_string)
+        #pprint.pprint(data_string)
 
         # get the api key for authorisation
         error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)

@@ -13,13 +13,13 @@
 from bs4 import BeautifulSoup
 from training import *
 
+from lxml import html
 import datetime
 import requests
 import re
-import urllib2
-import urllib
-import json
 import pprint
+import urllib2
+import sys
 
 host = 'tess.oerc.ox.ac.uk'
 protocol = 'https'
@@ -27,17 +27,18 @@ create_package = protocol + '://' + host + '/api/3/action/package_create'
 create_resource = protocol + '://' + host + '/api/3/action/resource_create'
 root_url = 'http://www.mygoblet.org/'
 owner_org = 'goblet'
+lessons = {}
 
 def parse_data(page):
-    lessons = {}
     topic_match = re.compile('topic-tags')
     audience_match = re.compile('audience-tags')
     portal_match = re.compile('training-portal')
-    #page = requests.get(root_url + page)
-    #tree = html.fromstring(page.text)
-    with open ("goblet.html", "r") as myfile:
-        data=myfile.read().replace('\n', '')
-    tree = BeautifulSoup(data)
+    response = urllib2.urlopen(root_url + page)
+    html = response.read()
+    #pprint.pprint(html)
+    #with open ("goblet.html", "r") as myfile:
+    #    data=myfile.read().replace('\n', '')
+    tree = BeautifulSoup(html) # or data, if reading locally
     rows = tree.find_all('tbody')[0].find_all('tr')
     for row in rows:
         key = None
@@ -62,7 +63,7 @@ def parse_data(page):
         lessons[key] = {'audience':audience, 'topics':topics, 'last_modified':date_modified, 'name':name}
 
 
-    return lessons
+    #return lessons
 
 
 
@@ -101,22 +102,26 @@ def return_date(datestring):
     return earlier
 
 # ?page=0,1,2
-lessons = parse_data('training-portal')
+pages = ['0','1','2']
+for p in pages:
+    parse_data('training-portal?page=' + p)
 #pprint.pprint(lessons)
+#sys.exit()
 
 # store all the tutorials in here
 website = CourseWebsite()
-website.name = "GOBLET Training Materials"
+website.name = "goblet-training-materials"
 website.url = root_url + 'training-portal'
 website.owning_org = owner_org
 
 # each individual tutorial
 for key in lessons:
     course = Tutorial()
-    course.url = key
+    course.url = root_url + key
     course.owning_org = website.owning_org
     course.name = lessons[key]['name']
     course.last_modified = str(lessons[key]['last_modified'])
+    course.created = str(lessons[key]['last_modified'])
     course.audience = lessons[key]['audience']
     course.keywords = lessons[key]['topics']
     website.tuition_units.append(course)
@@ -126,7 +131,19 @@ for key in lessons:
 
 # Actually upload them. It will be essential to get the name/id of the created dataset in order that resources can be
 # added to it; uploader.do_upload() should return this, but it will have to be parsed here.
+
 uploader = CKANUploader(None)
-pprint.pprint(website.dump())
+#pprint.pprint(website.dump())
 dataset = uploader.create_dataset(website.dump())
-pprint.pprint(dataset)
+#pprint.pprint(dataset)
+dataset_id = str(dataset['id'])
+#dataset_id = 'fe3b9c72-2167-4a43-8d1e-f25f9e27b377'
+
+for tunit in website.tuition_units:
+    tunit.package_id = dataset_id
+    tunit.owning_org = owner_org
+    tunit.format = 'html'
+    print "DUMP: "
+    pprint.pprint(tunit.dump())
+    uploader.create_resource(tunit.dump())
+
