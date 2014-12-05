@@ -151,13 +151,29 @@ for key in lessons:
     # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
     data_exists = check_data(course)
     if data_exists:
-        if len (data_exists['resources']) > 0:
-            # update all the things
-            print "Would update here, if required."
+        print "LOCAL: "
+        pprint.pprint(course.dump())
+        print "REMOTE: "
+        pprint.pprint(data_exists)
+        new_data = TuitionUnit.compare(course.dump(),data_exists)
+        if new_data:
+            print "DATASET: Something has changed."
         else:
-            # Only create the resource because the dataset exists.
-            dataset_id = data_exists['id']
-            do_upload_resource(course,dataset_id)
+            print "DATASET: No change."
+        course.name = course.name + "-link"
+        for res in data_exists['resources']:
+            # update all the things
+            new_data = TuitionUnit.compare(course.dump(),res)
+            print "LOCAL: "
+            pprint.pprint(course.dump())
+            print "REMOTE: "
+            pprint.pprint(res)
+            if new_data:
+                print "RESOURCE: Something has changed."
+            else:
+                print "RESOURCE: No change."
+                #dataset_id = data_exists['id']
+                #do_upload_resource(course,dataset_id)
     else:
         # If neither exists then they should be created.
         print "Found nothing. Creating."

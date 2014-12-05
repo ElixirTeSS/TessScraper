@@ -48,6 +48,18 @@ class TuitionUnit:
                 }
         return data
 
+    # Compare the current (under examination) version of the data with that which is already on TeSS.
+    # Return each field which needs updating as a hash, so this can be passed to the update functions.
+    @staticmethod
+    def compare(current,tess):
+        newdata = {}
+        for key in current:
+            key = key.encode('utf8')
+            if hasattr(tess,key):
+                if current[key] != tess[key]:
+                    newdata[key] = current[key]
+        return newdata
+
 
 # 6: Name of author
 # 7: Date created

@@ -9,12 +9,22 @@ import pprint
 # and datasets on a CKAN installation.
 # http://docs.ckan.org/en/latest/user-guide.html
 
-# 1. Create a new Uploader, passing in the api key
-# 2. Run the create_resource or create_dataset action, passing in data
 class CKANUploader:
     host = 'tess.oerc.ox.ac.uk'
     protocol = 'https'
     auth = 'api.txt'
+
+    @staticmethod
+    def get_api_key():
+        # get the api key for authorisation
+        error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
+        try:
+            with open (CKANUploader.auth, "r") as apifile:
+                api = apifile.read().replace('\n', '')
+                return api
+        except error_to_catch:
+            print "Can't open api file: " + CKANUploader.auth
+            return None
 
     @staticmethod
     def create_dataset(data):
@@ -72,14 +82,22 @@ class CKANUploader:
         else:
             return None
 
+    # These update methods should receive data which consist of a hash of only the
+    # fields which are to be updated. I hope that that will work.
     @staticmethod
-    def get_api_key():
-        # get the api key for authorisation
-        error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
-        try:
-            with open (CKANUploader.auth, "r") as apifile:
-                api = apifile.read().replace('\n', '')
-                return api
-        except error_to_catch:
-            print "Can't open api file: " + CKANUploader.auth
-            return None
+    def update_dataset(data):
+        action = '/api/3/action/package_update'
+        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        return CKANUploader.__do_update(data,url)
+
+    @staticmethod
+    def update_resource(data):
+        action = '/api/3/action/resource_update'
+        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        return CKANUploader.__do_update(data,url)
+
+    @staticmethod
+    def __do_update(data,url):
+        pass
+
+
