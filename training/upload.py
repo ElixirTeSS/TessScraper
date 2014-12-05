@@ -14,40 +14,29 @@ import pprint
 class CKANUploader:
     host = 'tess.oerc.ox.ac.uk'
     protocol = 'https'
+    auth = 'api.txt'
 
-    def __init__(self, auth):
-        if auth:
-            self.auth = auth
-        else:
-            self.auth = "api.txt"
-
-    def create_dataset(self,data):
+    @staticmethod
+    def create_dataset(data):
         action = '/api/3/action/package_create'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        return self.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url)
 
-    def create_resource(self,data):
+    @staticmethod
+    def create_resource(data):
         action = '/api/3/action/resource_create'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        return self.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url)
 
-    def update_resource(self,data):
-        # this will be to update a changed resource
-        pass
-
-    def __do_upload(self,data,url):
+    @staticmethod
+    def __do_upload(data,url):
         # process data to json for uploading
         print "Trying URL: " + url
         data_string = urllib.quote(json.dumps(data))
         #pprint.pprint(data_string)
 
-        # get the api key for authorisation
-        error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
-        try:
-            with open (self.auth, "r") as apifile:
-                api = apifile.read().replace('\n', '')
-        except error_to_catch:
-            print "Can't open api file: " + self.auth
+        api = CKANUploader.get_api_key()
+        if not api:
             return
 
         request = urllib2.Request(url)
@@ -66,3 +55,31 @@ class CKANUploader:
         pprint.pprint(created_package)
         return created_package
 
+    @staticmethod
+    def check_dataset(data):
+        action = '/api/3/action/package_show?id='
+        url = CKANUploader.protocol + '://' + CKANUploader.host + action + data['name']
+        api = CKANUploader.get_api_key()
+        if not api:
+            return
+        request = urllib2.Request(url)
+        request.add_header('Authorization', api)
+        response = urllib2.urlopen(request)
+        assert response.code == 200
+        response_dict = json.loads(response.read())
+        if response_dict['success']:
+            return response_dict['result']
+        else:
+            return None
+
+    @staticmethod
+    def get_api_key():
+        # get the api key for authorisation
+        error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
+        try:
+            with open (CKANUploader.auth, "r") as apifile:
+                api = apifile.read().replace('\n', '')
+                return api
+        except error_to_catch:
+            print "Can't open api file: " + CKANUploader.auth
+            return None

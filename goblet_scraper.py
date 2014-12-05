@@ -62,9 +62,39 @@ def parse_data(page):
         lessons[key] = {'audience':audience, 'topics':topics, 'last_modified':date_modified, 'name':name}
 
 
-    #return lessons
+def do_uploads(course):
+    try:
+        dataset = CKANUploader.create_dataset(course.dump())
+        course.package_id = str(dataset['id'])
+        course.name = course.name + "-link"
+        CKANUploader.create_resource(course.dump())
+    except Exception as e:
+        print "Error whilst uploading! Details: " + str(e)
 
 
+def check_data(course):
+    result = CKANUploader.check_dataset(course.dump())
+    if  result:
+        name = result['name']
+        print "Got dataset: " + name
+        found = False
+        for res in result['resources']:
+            if res['name'] == name + '-link':
+                print "Got resource: " + name + '-link'
+                found = True
+        if found:
+            return 'both'
+        else:
+            print "No resources found for dataset" + name
+            return 'dataset'
+
+    else:
+        print "Failed to get result for dataset " + course['name']
+        return 'neither'
+    # https://tess.oerc.ox.ac.uk/api/3/action/package_show?id=course['name']
+    # result['success'] # true/false if found anything
+    # To get a resource with resource_show then its ID is required, which we don't have at this point.
+    # Unless, having got the dataset above we then query it for resources.
 
 # This monstrosity would not be required if we had a proper feed
 # with the actual date in it.
@@ -100,19 +130,15 @@ def return_date(datestring):
 
     return earlier
 
-# ?page=0,1,2
+##################################################
+# Main body of the script below, functions above #
+##################################################
+
 #pages = ['0','1','2']
-pages = ['1','2']
+pages = ['0']
 for p in pages:
     parse_data('training-portal?page=' + p)
-#pprint.pprint(lessons)
-
-# store all the tutorials in here
-#website = CourseWebsite()
-#website.name = "goblet-training-materials"
-#website.url = root_url + 'training-portal'
-#website.owning_org = owner_org
-uploader = CKANUploader(None)
+#uploader = CKANUploader(None)
 
 # each individual tutorial
 for key in lessons:
@@ -120,43 +146,28 @@ for key in lessons:
     course.url = root_url + key
     course.owning_org = owner_org
     course.title = lessons[key]['name']
-    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key]['name'].lower())[:75]
+    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key]['name'].lower())[:99]
     course.last_modified = str(lessons[key]['last_modified'])
     course.created = str(lessons[key]['last_modified'])
     course.audience = lessons[key]['audience']
     course.keywords = lessons[key]['topics']
     course.format = 'html'
-    print "LESSON: "
-    pprint.pprint(course)
-    try:
-        dataset = uploader.create_dataset(course.dump())
-        course.package_id = str(dataset['id'])
-        course.name = course.name + "-link"
-        uploader.create_resource(course.dump())
-    except Exception as e:
-        print "Error whilst uploading! Details: " + str(e)
-        continue
-    #website.tuition_units.append(course)
 
-    #pprint.pprint(course.dump())
-#website.list_names()
-#pprint.pprint(website.dump())
+    # check to see if the dataset/resource exists
+    # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
+    data_exists = check_data(course)
+    if data_exists == 'dataset':
+        print "Found dataset only."
+    elif data_exists == 'both':
+        print "Both dataset and resource present."
+    elif data_exists == 'neither':
+        print "Found nothing."
+        pass
+    else:
+        print "WTF?"
+        pass
 
-# Actually upload them. It will be essential to get the name/id of the created dataset in order that resources can be
-# added to it; uploader.do_upload() should return this, but it will have to be parsed here.
+    # Create the dataset/resource
+    #do_uploads(course)
 
-#pprint.pprint(website.dump())
-#dataset = uploader.create_dataset(website.dump())
-#pprint.pprint(dataset)
-#dataset_id = str(dataset['id'])
-#dataset_id = 'fe3b9c72-2167-4a43-8d1e-f25f9e27b377'
 
-#for tunit in website.tuition_units:
-#    tunit.package_id = dataset_id
-#    tunit.owning_org = owner_org
-#    tunit.format = 'html'
-#    print "DUMP: "
-#    pprint.pprint(tunit.dump())
-#    uploader.create_resource(tunit.dump())
-
-# TODO: before creating a resource or dataset, check whether it exists. If it does, update rather than create.
