@@ -158,8 +158,8 @@ for key in lessons:
         new_data = TuitionUnit.compare(course.dump(),data_exists)
         if new_data:
             print "DATASET: Something has changed."
-            #updated = CKANUploader.update_dataset(new_data)
-            #pprint.pprint(updated)
+            updated = CKANUploader.update_dataset(new_data)
+            pprint.pprint(updated)
         else:
             print "DATASET: No change."
         course.name = course.name + "-link"
@@ -172,12 +172,12 @@ for key in lessons:
             pprint.pprint(res)
             if new_data:
                 print "RESOURCE: Something has changed."
-                #updated = CKANUploader.update_resource(new_data)
-                #pprint.pprint(updated)
+                updated = CKANUploader.update_resource(new_data)
+                pprint.pprint(updated)
             else:
                 print "RESOURCE: No change."
-                #dataset_id = data_exists['id']
-                #do_upload_resource(course,dataset_id)
+                dataset_id = data_exists['id']
+                do_upload_resource(course,dataset_id)
     else:
         # If neither exists then they should be created.
         print "Found nothing. Creating."
@@ -186,18 +186,5 @@ for key in lessons:
             do_upload_resource(course,dataset_id)
         else:
             print "Failed to create dataset so could not create resource: " + course['name']
-
-        # Create the resource, update the dataset
-        """
-        print "Found dataset only."
-    elif data_exists == 'both':
-        # Update both
-        print "Both dataset and resource present."
-    elif data_exists == 'neither':
-
-    else:
-        print "WTF?"
-        pass
-        """
 
 

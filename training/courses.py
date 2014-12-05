@@ -52,16 +52,20 @@ class TuitionUnit:
     # Return each field which needs updating as a hash, so this can be passed to the update functions.
     @staticmethod
     def compare(current,tess):
+        dont_change = ['created',
+                       'last_modified',
+                       'last_update']
         newdata = {}
         for key in current:
-            key = key.encode('utf8','ignore')
-            print "KEY: " + str(key)
+            if key in dont_change:
+              continue
+            print "KEY(1): " + str(key)
             try:
-                if current[key] != tess[key]:
+                if current[key].encode('utf8') != tess[key].encode('utf8'):
                     print "KEYDIFF"
                     newdata[key] = current[key]
-            except:
-                print "KEYFAIL"
+            except Exception as e:
+              print "KEYFAIL:  " + str(e)
         print "NEWDATA: " + str(newdata)
         return newdata
 
