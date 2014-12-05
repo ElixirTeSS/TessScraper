@@ -54,10 +54,15 @@ class TuitionUnit:
     def compare(current,tess):
         newdata = {}
         for key in current:
-            key = key.encode('utf8')
-            if hasattr(tess,key):
+            key = key.encode('utf8','ignore')
+            print "KEY: " + str(key)
+            try:
                 if current[key] != tess[key]:
+                    print "KEYDIFF"
                     newdata[key] = current[key]
+            except:
+                print "KEYFAIL"
+        print "NEWDATA: " + str(newdata)
         return newdata
 
 

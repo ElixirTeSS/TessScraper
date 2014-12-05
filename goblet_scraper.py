@@ -158,6 +158,8 @@ for key in lessons:
         new_data = TuitionUnit.compare(course.dump(),data_exists)
         if new_data:
             print "DATASET: Something has changed."
+            #updated = CKANUploader.update_dataset(new_data)
+            #pprint.pprint(updated)
         else:
             print "DATASET: No change."
         course.name = course.name + "-link"
@@ -170,6 +172,8 @@ for key in lessons:
             pprint.pprint(res)
             if new_data:
                 print "RESOURCE: Something has changed."
+                #updated = CKANUploader.update_resource(new_data)
+                #pprint.pprint(updated)
             else:
                 print "RESOURCE: No change."
                 #dataset_id = data_exists['id']

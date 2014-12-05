@@ -88,13 +88,13 @@ class CKANUploader:
     def update_dataset(data):
         action = '/api/3/action/package_update'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        return CKANUploader.__do_update(data,url)
+        return CKANUploader.__do_upload(data,url)
 
     @staticmethod
     def update_resource(data):
         action = '/api/3/action/resource_update'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        return CKANUploader.__do_update(data,url)
+        return CKANUploader.__do_upload(data,url)
 
     @staticmethod
     def __do_update(data,url):
