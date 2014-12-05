@@ -19,7 +19,6 @@ import requests
 import re
 import pprint
 import urllib2
-import sys
 
 host = 'tess.oerc.ox.ac.uk'
 protocol = 'https'
@@ -102,29 +101,43 @@ def return_date(datestring):
     return earlier
 
 # ?page=0,1,2
-pages = ['0','1','2']
+#pages = ['0','1','2']
+pages = ['1','2']
 for p in pages:
     parse_data('training-portal?page=' + p)
 #pprint.pprint(lessons)
-#sys.exit()
 
 # store all the tutorials in here
-website = CourseWebsite()
-website.name = "goblet-training-materials"
-website.url = root_url + 'training-portal'
-website.owning_org = owner_org
+#website = CourseWebsite()
+#website.name = "goblet-training-materials"
+#website.url = root_url + 'training-portal'
+#website.owning_org = owner_org
+uploader = CKANUploader(None)
 
 # each individual tutorial
 for key in lessons:
     course = Tutorial()
     course.url = root_url + key
-    course.owning_org = website.owning_org
-    course.name = lessons[key]['name']
+    course.owning_org = owner_org
+    course.title = lessons[key]['name']
+    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key]['name'].lower())[:75]
     course.last_modified = str(lessons[key]['last_modified'])
     course.created = str(lessons[key]['last_modified'])
     course.audience = lessons[key]['audience']
     course.keywords = lessons[key]['topics']
-    website.tuition_units.append(course)
+    course.format = 'html'
+    print "LESSON: "
+    pprint.pprint(course)
+    try:
+        dataset = uploader.create_dataset(course.dump())
+        course.package_id = str(dataset['id'])
+        course.name = course.name + "-link"
+        uploader.create_resource(course.dump())
+    except Exception as e:
+        print "Error whilst uploading! Details: " + str(e)
+        continue
+    #website.tuition_units.append(course)
+
     #pprint.pprint(course.dump())
 #website.list_names()
 #pprint.pprint(website.dump())
@@ -132,18 +145,18 @@ for key in lessons:
 # Actually upload them. It will be essential to get the name/id of the created dataset in order that resources can be
 # added to it; uploader.do_upload() should return this, but it will have to be parsed here.
 
-uploader = CKANUploader(None)
 #pprint.pprint(website.dump())
-dataset = uploader.create_dataset(website.dump())
+#dataset = uploader.create_dataset(website.dump())
 #pprint.pprint(dataset)
-dataset_id = str(dataset['id'])
+#dataset_id = str(dataset['id'])
 #dataset_id = 'fe3b9c72-2167-4a43-8d1e-f25f9e27b377'
 
-for tunit in website.tuition_units:
-    tunit.package_id = dataset_id
-    tunit.owning_org = owner_org
-    tunit.format = 'html'
-    print "DUMP: "
-    pprint.pprint(tunit.dump())
-    uploader.create_resource(tunit.dump())
+#for tunit in website.tuition_units:
+#    tunit.package_id = dataset_id
+#    tunit.owning_org = owner_org
+#    tunit.format = 'html'
+#    print "DUMP: "
+#    pprint.pprint(tunit.dump())
+#    uploader.create_resource(tunit.dump())
 
+# TODO: before creating a resource or dataset, check whether it exists. If it does, update rather than create.

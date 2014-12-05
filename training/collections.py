@@ -10,6 +10,7 @@ class CourseWebsite:
     def __init__(self):
         self.id = uuid.uuid4()
         self.name = None
+        self.title = None
         self.url = None
         self.elixir_uk_sector = None
         self.tuition_units = []
@@ -26,6 +27,7 @@ class CourseWebsite:
     # CKAN expects some JSON to be sent when creating new objects.
     def dump(self):
         data = {'name': self.name,
+                'title': self.title,
                 #'url': os.path.basename(self.url),
                 #'url': 'wibble',
                 #'url': str(self.id).encode('ascii','ignore'),

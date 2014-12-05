@@ -31,6 +31,10 @@ class CKANUploader:
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
         return self.__do_upload(data,url)
 
+    def update_resource(self,data):
+        # this will be to update a changed resource
+        pass
+
     def __do_upload(self,data,url):
         # process data to json for uploading
         print "Trying URL: " + url

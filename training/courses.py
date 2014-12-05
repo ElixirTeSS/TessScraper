@@ -16,6 +16,7 @@ class TuitionUnit:
     def __init__(self):
         self.id = uuid.uuid4()
         self.name = None
+        self.title = None
         self.url = None
         self.package_id = None # CKAN package ID
         self.parent_id = None # id of preceeding tutorial/class &c.
@@ -31,8 +32,9 @@ class TuitionUnit:
 
     # CKAN expects some JSON to be sent when creating new objects.
     def dump(self):
-        data = {'id': str(self.id),
+        data = {#'id': str(self.id),
                 'name': self.name,
+                'title': self.title,
                 'url': self.url,
                 'parent_id': self.parent_id,
                 'doi': self.doi,
@@ -41,7 +43,7 @@ class TuitionUnit:
                 'last_modified': self.last_modified,
                 'keywords': self.keywords,
                 'difficulty': self.difficulty,
-                'owning_org': self.owning_org,
+                'owner_org': self.owning_org,
                 'package_id': self.package_id
                 }
         return data
