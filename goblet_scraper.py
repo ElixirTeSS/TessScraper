@@ -62,10 +62,19 @@ def parse_data(page):
         lessons[key] = {'audience':audience, 'topics':topics, 'last_modified':date_modified, 'name':name}
 
 
-def do_uploads(course):
+# upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
+# Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
+# of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
+def do_upload_dataset(course):
     try:
         dataset = CKANUploader.create_dataset(course.dump())
-        course.package_id = str(dataset['id'])
+        return str(dataset['id'])
+    except:
+        return None
+
+def do_upload_resource(course,package_id):
+    try:
+        course.package_id = package_id
         course.name = course.name + "-link"
         CKANUploader.create_resource(course.dump())
     except Exception as e:
@@ -74,27 +83,12 @@ def do_uploads(course):
 
 def check_data(course):
     result = CKANUploader.check_dataset(course.dump())
-    if  result:
+    if result:
         name = result['name']
         print "Got dataset: " + name
-        found = False
-        for res in result['resources']:
-            if res['name'] == name + '-link':
-                print "Got resource: " + name + '-link'
-                found = True
-        if found:
-            return 'both'
-        else:
-            print "No resources found for dataset" + name
-            return 'dataset'
-
+        return result
     else:
-        print "Failed to get result for dataset " + course['name']
-        return 'neither'
-    # https://tess.oerc.ox.ac.uk/api/3/action/package_show?id=course['name']
-    # result['success'] # true/false if found anything
-    # To get a resource with resource_show then its ID is required, which we don't have at this point.
-    # Unless, having got the dataset above we then query it for resources.
+        return None
 
 # This monstrosity would not be required if we had a proper feed
 # with the actual date in it.
@@ -156,18 +150,34 @@ for key in lessons:
     # check to see if the dataset/resource exists
     # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
     data_exists = check_data(course)
-    if data_exists == 'dataset':
+    if data_exists:
+        if len (data_exists['resources']) > 0:
+            # update all the things
+            print "Would update here, if required."
+        else:
+            # Only create the resource because the dataset exists.
+            dataset_id = data_exists['id']
+            do_upload_resource(course,dataset_id)
+    else:
+        # If neither exists then they should be created.
+        print "Found nothing. Creating."
+        dataset_id = do_upload_dataset(course)
+        if dataset_id:
+            do_upload_resource(course,dataset_id)
+        else:
+            print "Failed to create dataset so could not create resource: " + course['name']
+
+        # Create the resource, update the dataset
+        """
         print "Found dataset only."
     elif data_exists == 'both':
+        # Update both
         print "Both dataset and resource present."
     elif data_exists == 'neither':
-        print "Found nothing."
-        pass
+
     else:
         print "WTF?"
         pass
-
-    # Create the dataset/resource
-    #do_uploads(course)
+        """
 
 
