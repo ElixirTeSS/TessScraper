@@ -60,14 +60,11 @@ class TuitionUnit:
             if key in dont_change:
               continue
             print "KEY(1): " + str(key)
-            try:
-                if current[key].encode('utf8') != tess[key].encode('utf8'):
-                    print "KEYDIFF"
-                    newdata[key] = current[key]
-            except Exception as e:
-              print "KEYFAIL:  " + str(e)
+            if current[key] != tess.get(key,None):
+               print "KEYDIFF"
+               newdata[key] = current[key]
         print "NEWDATA: " + str(newdata)
-        return newdata
+        return [tess['id'].encode('ascii'),newdata]
 
 
 # 6: Name of author

@@ -156,9 +156,12 @@ for key in lessons:
         print "REMOTE: "
         pprint.pprint(data_exists)
         new_data = TuitionUnit.compare(course.dump(),data_exists)
-        if new_data:
+        name = new_data[0]
+        changes = new_data[1]
+        if changes:
             print "DATASET: Something has changed."
-            updated = CKANUploader.update_dataset(new_data)
+            changes['id'] = name
+            updated = CKANUploader.update_dataset(changes)
             pprint.pprint(updated)
         else:
             print "DATASET: No change."
@@ -166,13 +169,16 @@ for key in lessons:
         for res in data_exists['resources']:
             # update all the things
             new_data = TuitionUnit.compare(course.dump(),res)
+            name = new_data[0]
+            changes = new_data[1]
             print "LOCAL: "
             pprint.pprint(course.dump())
             print "REMOTE: "
             pprint.pprint(res)
-            if new_data:
+            if changes:
                 print "RESOURCE: Something has changed."
-                updated = CKANUploader.update_resource(new_data)
+                changes['id'] = name
+                updated = CKANUploader.update_resource(changes)
                 pprint.pprint(updated)
             else:
                 print "RESOURCE: No change."
