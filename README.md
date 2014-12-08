@@ -7,7 +7,8 @@ Installation
 ============
 
     git clone git@github.com:ElixirUK/TessScraper.git
-    pip install -r requirement.txt
+    cd TessScraper
+    sudo pip install -r requirements.txt
 
 On your TeSS instance locate the API key from your user account page and copy it into a file called 'api.txt' in the root directory of TessScraper. It should look something similar to this:
 
