@@ -53,8 +53,8 @@ class CKANUploader:
         request.add_header('Authorization', api)
 
         # Make the HTTP request - check the apache logs to see the reason for any crashes
-        print "DATA: "
-        pprint.pprint(data)
+        #print "DATA: "
+        #pprint.pprint(data)
         response = urllib2.urlopen(request, data_string)
         assert response.code == 200
 

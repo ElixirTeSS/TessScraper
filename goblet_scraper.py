@@ -20,10 +20,6 @@ import re
 import pprint
 import urllib2
 
-host = 'tess.oerc.ox.ac.uk'
-protocol = 'https'
-create_package = protocol + '://' + host + '/api/3/action/package_create'
-create_resource = protocol + '://' + host + '/api/3/action/resource_create'
 root_url = 'http://www.mygoblet.org/'
 owner_org = 'goblet'
 lessons = {}
@@ -128,8 +124,7 @@ def return_date(datestring):
 # Main body of the script below, functions above #
 ##################################################
 
-#pages = ['0','1','2']
-pages = ['0']
+pages = ['0','1','2']
 for p in pages:
     parse_data('training-portal?page=' + p)
 #uploader = CKANUploader(None)
@@ -147,16 +142,21 @@ for key in lessons:
     course.keywords = lessons[key]['topics']
     course.format = 'html'
 
+    dataset_id = do_upload_dataset(course)
+    if dataset_id:
+        do_upload_resource(course,dataset_id)
+    else:
+        print "Failed to create dataset so could not create resource: " + course.name
+
     # check to see if the dataset/resource exists
     # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
+    """
     data_exists = check_data(course)
     if data_exists:
-        """
-        print "LOCAL: "
-        pprint.pprint(course.dump())
-        print "REMOTE: "
-        pprint.pprint(data_exists)
-        """
+        #print "LOCAL: "
+        #pprint.pprint(course.dump())
+        #print "REMOTE: "
+        #pprint.pprint(data_exists)
         new_data = TuitionUnit.compare(course.dump(),data_exists)
         name = new_data[0]
         changes = new_data[1]
@@ -173,12 +173,10 @@ for key in lessons:
             new_data = TuitionUnit.compare(course.dump(),res)
             name = new_data[0]
             changes = new_data[1]
-            """
-            print "LOCAL: "
-            pprint.pprint(course.dump())
-            print "REMOTE: "
-            pprint.pprint(res)
-            """
+            #print "LOCAL: "
+            #pprint.pprint(course.dump())
+            #print "REMOTE: "
+            #pprint.pprint(res)
             if changes:
                 print "RESOURCE: Something has changed."
                 changes['id'] = name
@@ -196,5 +194,6 @@ for key in lessons:
             do_upload_resource(course,dataset_id)
         else:
             print "Failed to create dataset so could not create resource: " + course['name']
+     """
 
 
