@@ -151,10 +151,12 @@ for key in lessons:
     # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
     data_exists = check_data(course)
     if data_exists:
+        """
         print "LOCAL: "
         pprint.pprint(course.dump())
         print "REMOTE: "
         pprint.pprint(data_exists)
+        """
         new_data = TuitionUnit.compare(course.dump(),data_exists)
         name = new_data[0]
         changes = new_data[1]
@@ -171,10 +173,12 @@ for key in lessons:
             new_data = TuitionUnit.compare(course.dump(),res)
             name = new_data[0]
             changes = new_data[1]
+            """
             print "LOCAL: "
             pprint.pprint(course.dump())
             print "REMOTE: "
             pprint.pprint(res)
+            """
             if changes:
                 print "RESOURCE: Something has changed."
                 changes['id'] = name

@@ -52,17 +52,28 @@ class TuitionUnit:
     # Return each field which needs updating as a hash, so this can be passed to the update functions.
     @staticmethod
     def compare(current,tess):
+        return['',{}]
         dont_change = ['created',
                        'last_modified',
                        'last_update']
         newdata = {}
         for key in current:
+            # This may need re-thinking - the data may be modified on TeSS, or on the originating site.
+            # How should be choose which to keep?
             if key in dont_change:
-              continue
+                continue
+            # It's likely that scraping a website won't give me all the information we need, and TeSS may
+            # have some edits. If so, these should not be overwritten by the null values from the original.
+            if key == None or key == 'None':
+                continue
             print "KEY(1): " + str(key)
-            if current[key] != tess.get(key,None):
-               print "KEYDIFF"
-               newdata[key] = current[key]
+            tesskey = tess.get(key,None)
+            currentkey = current[key]
+            if tesskey and currentkey:
+                print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('utf8','ignore'))
+                if currentkey.encode('utf8','ignore') != tesskey.encode('utf8','ignore'):
+                    print "KEYDIFF"
+                    newdata[key] = current[key]
         print "NEWDATA: " + str(newdata)
         return [tess['id'].encode('ascii'),newdata]
 
