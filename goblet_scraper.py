@@ -135,7 +135,7 @@ for key in lessons:
     course.url = root_url + key
     course.owning_org = owner_org
     course.title = lessons[key]['name']
-    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key]['name'].lower())[:99]
+    course.set_name(owner_org,lessons[key])
     course.last_modified = str(lessons[key]['last_modified'])
     course.created = str(lessons[key]['last_modified'])
     course.audience = lessons[key]['audience']

@@ -63,11 +63,14 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_show?id='
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action + data['name']
+        print "DATA: "
+        pprint.pprint(data)
+        print "Trying URL: " + url
         auth = conf['auth']
         if not auth:
             return
         request = urllib2.Request(url)
-        request.add_header('Authorization', api)
+        request.add_header('Authorization', auth)
         response = urllib2.urlopen(request)
         assert response.code == 200
         response_dict = json.loads(response.read())
