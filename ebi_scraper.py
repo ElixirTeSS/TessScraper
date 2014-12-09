@@ -31,7 +31,10 @@ def parse_data(page):
     for link in links:
         item = link.find("div", {"class": "views-field-title"}).find('a')
         description = link.find("div", {"class": "views-field-field-course-desc-value"}).get_text()
-        topics = link.find("div", {"class": "views-field-tid"}).get_text()
+	try:
+       		topics = link.find("div", {"class": "views-field-tid"}).get_text()
+	except:
+		pass
         href = item['href']
         lessons[href] = {}
         text= item.get_text()
@@ -104,21 +107,15 @@ class OrgUnit():
                 }
         return data
 
+def create_organization():
+	organization = OrgUnit()
+	organization.title = 'European Bioinformatics Institute (EBI)'
+	organization.name = 'european-bioinformatics-institute-ebi'
+	organization.description = 'EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.'
+	organization.image_url = 'http://www.theconsultants-e.com/Libraries/Clients/European_Bioinformatics_Institute.sflb.ashx'
+	do_upload_organization(organization)
 
-
-organization = OrgUnit()
-organization.title = 'European Bioinformatics Institute (EBI)'
-organization.name = 'european-bioinformatics-institute-ebi'
-organization.description = 'EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.'
-organization.image_url = 'http://www.theconsultants-e.com/Libraries/Clients/European_Bioinformatics_Institute.sflb.ashx'
-do_upload_organization(organization)
-
-# each individual tutorial
-first_page = '/training/online/course-list'
-
-for page_no in range(1, last_page_number()):
-    page = first_page + '?page=' + str(page_no)
-    print "\n\n\n\n\n" + page + "\n\n\n\n\n" 
+def scrape_page(page):
     parse_data(page)
     for key in lessons:
         course = Tutorial()
@@ -139,4 +136,15 @@ for page_no in range(1, last_page_number()):
             do_upload_resource(course,dataset_id)
         else:
             print "Failed to create dataset so could not create resource: " + course.name
+
+
+create_organization()
+# each individual tutorial
+first_page = '/training/online/course-list'
+scrape_page(first_page)
+
+for page_no in range(1, last_page_number()):
+    page = first_page + '?page=' + str(page_no)
+    print "\n\n\n\n\n" + page + "\n\n\n\n\n" 
+    scrape_page(page)
 
