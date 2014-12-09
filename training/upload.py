@@ -18,14 +18,14 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_create'
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
-        return CKANUploader.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def create_resource(data):
         conf = CKANUploader.get_config()
         action = '/api/3/action/resource_create'
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
-        return CKANUploader.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def __do_upload(data,url,conf):
@@ -33,13 +33,15 @@ class CKANUploader:
         print "Trying URL: " + url
         data_string = urllib.quote(json.dumps(data))
         #pprint.pprint(data_string)
+        #pprint.pprint(conf)
 
-        api = conf['api']
-        if not api:
+        auth = conf['auth']
+        if not auth:
+            print "API string missing!"
             return
 
         request = urllib2.Request(url)
-        request.add_header('Authorization', api)
+        request.add_header('Authorization', auth)
 
         # Make the HTTP request - check the apache logs to see the reason for any crashes
         #print "DATA: "
@@ -61,8 +63,8 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_show?id='
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action + data['name']
-        api = conf['api']
-        if not api:
+        auth = conf['auth']
+        if not auth:
             return
         request = urllib2.Request(url)
         request.add_header('Authorization', api)
@@ -91,7 +93,7 @@ class CKANUploader:
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
-    def __do_update(data,url):
+    def __do_update(data,url,conf):
         pass
 
 
@@ -102,7 +104,7 @@ class CKANUploader:
         try:
             Config.read('uploader_config.txt')
         except error_to_catch:
-            print "Can't open api file: " + CKANUploader.auth
+            print "Can't open config file."
             return None
 
         host = Config.get('Main','host')
