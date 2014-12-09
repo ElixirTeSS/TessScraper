@@ -30,11 +30,28 @@ def parse_data(page):
     links = tree.find("div", {"class": "item-list"}).find_all('ul')[0].find_all('li')
     for link in links:
         item = link.find("div", {"class": "views-field-title"}).find('a')
+        description = link.find("div", {"class": "views-field-field-course-desc-value"}).get_text()
+        topics = link.find("div", {"class": "views-field-tid"}).get_text()
         href = item['href']
+        lessons[href] = {}
         text= item.get_text()
-#        if text == 'Tutorials Home':
-#            continue
-        lessons[href] = text
+        lessons[href]['text'] = text
+        lessons[href]['description'] = description
+        lessons[href]['topics'] = extract_keywords(topics)
+
+
+# example:
+# text = "\n\n      Topic: \n\n       Ontologies\n\n System\n\n"
+def extract_keywords(text):
+    #remove 'Topic:', newlines, and white space. Then split into array of topics and reject any empty ones
+    text = text.replace('Topic:', '')
+    text = re.sub('\n', '', text)
+    text = re.sub(' +',' ', text)
+    keywords = text.split(' ')
+    for keyword in keywords:
+        if keyword == '':
+            keywords.remove(keyword)
+    return keywords
 
 # upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
 # Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
@@ -54,26 +71,35 @@ def do_upload_resource(course,package_id):
     except Exception as e:
         print "Error whilst uploading! Details: " + str(e)
 
-
+#Stub - to complete find li with url of last page and return its int here 
+def last_page_number():
+    return 3
 
 # each individual tutorial
-parse_data('/training/online/course-list')
-for key in lessons:
-    course = Tutorial()
-    course.url = root_url + key
-    course.title = lessons[key]
-    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key].lower())[:99]
-    course.owning_org = owner_org
-    course.format = 'html'
-    pprint.pprint(course.dump())
+first_page = '/training/online/course-list'
 
-    # Upload at present with no checking.
-    dataset_id = do_upload_dataset(course)
-    print "ID: " + str(dataset_id)
-    if dataset_id:
-        do_upload_resource(course,dataset_id)
-    else:
-        print "Failed to create dataset so could not create resource: " + course.name
+for page_no in range(1, last_page_number()):
+    page = first_page + '?page=' + str(page_no)
+    print "\n\n\n\n\n" + page + "\n\n\n\n\n" 
+    parse_data(page)
+    for key in lessons:
+        course = Tutorial()
+        course.url = root_url + key
+        course.notes = lessons[key]['description']
+        course.title = lessons[key]['text']
+        course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key]['text'].lower())[:99]
+        course.keywords = lessons[key]['topics']
+        course.owning_org = owner_org
+        course.format = 'html'
+        pprint.pprint(course.dump())
+
+        # Upload at present with no checking.
+        dataset_id = do_upload_dataset(course)
+        print "ID: " + str(dataset_id)
+        if dataset_id:
+            do_upload_resource(course,dataset_id)
+        else:
+            print "Failed to create dataset so could not create resource: " + course.name
 
 
 
