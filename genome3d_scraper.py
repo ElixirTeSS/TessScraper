@@ -25,8 +25,13 @@ lessons = {}
 # There doesn't seem to be much need to parse this at the moment - CKAN seems to be expecting the URL of a resource
 # rather than the resource itself.
 def parse_data(page):
-    response = urllib2.urlopen(root_url + page)
-    tree = BeautifulSoup(response.read())
+    #response = urllib2.urlopen(root_url + page)
+    #tree = BeautifulSoup(response.read())
+
+    with open ("genome3d.html", "r") as myfile:
+        data=myfile.read().replace('\n', '')
+    tree = BeautifulSoup(data)
+
     links = tree.find("div", {"id": "context-menu"}).find_all('ul')[0].find_all('li')
     for link in links:
         item =  link.find('a')
@@ -54,17 +59,29 @@ def do_upload_resource(course,package_id):
     except Exception as e:
         print "Error whilst uploading! Details: " + str(e)
 
+def check_data(course):
+    result = CKANUploader.check_dataset(course.dump())
+    if result:
+        name = result['name']
+        print "Got dataset: " + name
+        return result
+    else:
+        return None
+
 
 
 # each individual tutorial
 parse_data('tutorials/page/Public/Page/Tutorial/Index')
+print "LESSONS:"
+pprint.pprint(lessons)
 for key in lessons:
     course = Tutorial()
     course.url = root_url + key
     course.title = lessons[key]
-    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key].lower())[:99]
+    course.set_name(owner_org,lessons[key])
     course.owning_org = owner_org
     course.format = 'html'
+    print "COURSE: "
     pprint.pprint(course.dump())
 
     # Upload at present with no checking.
@@ -74,6 +91,13 @@ for key in lessons:
         do_upload_resource(course,dataset_id)
     else:
         print "Failed to create dataset so could not create resource: " + course.name
+
+    existing = check_data(course)
+    print "EXISTING:"
+    pprint.pprint(existing)
+    check = TuitionUnit.compare(course.dump(),existing)
+    print "CHECK:"
+    pprint.pprint(check)
 
 
 

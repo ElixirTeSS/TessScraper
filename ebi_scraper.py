@@ -87,7 +87,7 @@ for page_no in range(1, last_page_number()):
         course.url = root_url + key
         course.notes = lessons[key]['description']
         course.title = lessons[key]['text']
-        course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key]['text'].lower())[:99]
+        course.set_name(owner_org,lessons[key]['text'])
         course.keywords = lessons[key]['topics']
         course.owning_org = owner_org
         course.format = 'html'

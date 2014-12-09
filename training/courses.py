@@ -2,6 +2,7 @@ __author__ = 'milo'
 
 import uuid
 import json
+import re
 
 # A general class of which tutorials, face-to-face courses &c. are a subclass.
 # All of these will need a name, id, url and so on, so it make sense to subclass
@@ -49,6 +50,11 @@ class TuitionUnit:
                 'package_id': self.package_id
                 }
         return data
+
+    # The name has to be unique, not a special CKAN name (e.g. search), and no more than 100
+    # characters in length, as well as containing only 0-9,a-z,- and _
+    def set_name(self,owner_org,name):
+        self.name = (owner_org + '-' + re.sub('[^0-9a-z_-]+', '_',name.lower()))[:99]
 
     # Compare the current (under examination) version of the data with that which is already on TeSS.
     # Return each field which needs updating as a hash, so this can be passed to the update functions.
