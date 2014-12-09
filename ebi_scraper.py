@@ -46,15 +46,20 @@ def parse_data(page):
 # example:
 # text = "\n\n      Topic: \n\n       Ontologies\n\n System\n\n"
 def extract_keywords(text):
-    #remove 'Topic:', newlines, and white space. Then split into array of topics and reject any empty ones
+    # Remove 'Topic:', newlines, and white space.
+    # Split into array of topics and reject any empty ones
+    # Format for CKAN Uploader
     text = text.replace('Topic:', '')
     text = re.sub('\n', '', text)
     text = re.sub(' +',' ', text)
     keywords = text.split(' ')
+    tags = []
     for keyword in keywords:
-        if keyword == '':
+        if keyword == '' or len(keyword) < 3:
             keywords.remove(keyword)
-    return keywords
+	else:
+	    tags.append({"name": keyword})
+    return tags
 
 # upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
 # Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
@@ -78,8 +83,9 @@ def do_upload_organization(org):
     try:
         org = CKANUploader.create_organization(org.dump())
 	return str(org['id'])
-    except:
-	return None
+    except Exception as e:
+	print "Error creating organization. Deets: " + str(e)
+
 	
 
 
@@ -107,7 +113,7 @@ class OrgUnit():
                 }
         return data
 
-def create_organization():
+def setup_organization():
 	organization = OrgUnit()
 	organization.title = 'European Bioinformatics Institute (EBI)'
 	organization.name = 'european-bioinformatics-institute-ebi'
@@ -123,7 +129,7 @@ def scrape_page(page):
         course.notes = lessons[key]['description']
         course.title = lessons[key]['text']
         course.set_name(owner_org,lessons[key]['text'])
-        course.keywords = lessons[key]['topics']
+        course.tags = lessons[key]['topics']
 
         course.owning_org = owner_org
         course.format = 'html'
@@ -138,7 +144,7 @@ def scrape_page(page):
             print "Failed to create dataset so could not create resource: " + course.name
 
 
-create_organization()
+setup_organization()
 # each individual tutorial
 first_page = '/training/online/course-list'
 scrape_page(first_page)

@@ -28,6 +28,14 @@ class CKANUploader:
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
+    def create_organization(data):
+	conf = CKANUploader.get_config()
+	action = '/api/3/action/organization_create'
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
+        return CKANUploader.__do_upload(data,url,conf)
+	
+
+    @staticmethod
     def __do_upload(data,url,conf):
         # process data to json for uploading
         print "Trying URL: " + url
