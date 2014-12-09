@@ -5,47 +5,36 @@ import urllib
 import json
 import pprint
 
+import ConfigParser
+
+
 # The purpose of this file is to flip out and incorporate the code for creating new resources
 # and datasets on a CKAN installation.
 # http://docs.ckan.org/en/latest/user-guide.html
 
 class CKANUploader:
-    host = 'tess.oerc.ox.ac.uk'
-    protocol = 'https'
-    auth = 'api.txt'
-
-    @staticmethod
-    def get_api_key():
-        # get the api key for authorisation
-        error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
-        try:
-            with open (CKANUploader.auth, "r") as apifile:
-                api = apifile.read().replace('\n', '')
-                return api
-        except error_to_catch:
-            print "Can't open api file: " + CKANUploader.auth
-            return None
-
     @staticmethod
     def create_dataset(data):
+        conf = CKANUploader.get_config()
         action = '/api/3/action/package_create'
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url)
 
     @staticmethod
     def create_resource(data):
+        conf = CKANUploader.get_config()
         action = '/api/3/action/resource_create'
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url)
 
     @staticmethod
-    def __do_upload(data,url):
+    def __do_upload(data,url,conf):
         # process data to json for uploading
         print "Trying URL: " + url
         data_string = urllib.quote(json.dumps(data))
         #pprint.pprint(data_string)
 
-        api = CKANUploader.get_api_key()
+        api = conf['api']
         if not api:
             return
 
@@ -69,9 +58,10 @@ class CKANUploader:
 
     @staticmethod
     def check_dataset(data):
+        conf = CKANUploader.get_config()
         action = '/api/3/action/package_show?id='
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action + data['name']
-        api = CKANUploader.get_api_key()
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action + data['name']
+        api = conf['api']
         if not api:
             return
         request = urllib2.Request(url)
@@ -88,18 +78,39 @@ class CKANUploader:
     # fields which are to be updated. I hope that that will work.
     @staticmethod
     def update_dataset(data):
+        conf = CKANUploader.get_config()
         action = '/api/3/action/package_update'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        return CKANUploader.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def update_resource(data):
+        conf = CKANUploader.get_config()
         action = '/api/3/action/resource_update'
         url = CKANUploader.protocol + '://' + CKANUploader.host + action
-        return CKANUploader.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def __do_update(data,url):
         pass
 
 
+    @staticmethod
+    def get_config():
+        error_to_catch = getattr(__builtins__,'FileNotFoundError', IOError)
+        Config = ConfigParser.ConfigParser()
+        try:
+            Config.read('uploader_config.txt')
+        except error_to_catch:
+            print "Can't open api file: " + CKANUploader.auth
+            return None
+
+        host = Config.get('Main','host')
+        port = Config.get('Main','port')
+        protocol = Config.get('Main','protocol')
+        auth = Config.get('Main','auth')
+
+        return {'host':host,
+                'port':port,
+                'protocol':protocol,
+                'auth':auth}
