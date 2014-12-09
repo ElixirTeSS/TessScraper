@@ -1,0 +1,5 @@
+[Main]
+host = tess.oerc.ox.ac.uk
+protocol = https
+port = 80
+auth = my_secret_api_string 
