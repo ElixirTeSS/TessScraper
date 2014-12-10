@@ -95,8 +95,8 @@ class TuitionUnit:
                         for value in ast.literal_eval(tesskey):
                             print "VAL: " + str(value)
                             newlist.append(value.encode('ascii','ignore'))
-                        if currentkey != newlist: #[x.encode('utf8','ignore') for x in tesskey]:
-                            print "C,T: " + str(currentkey) + ", " + str(newlist)
+                        if currentkey != newlist:
+                            #print "C,T: " + str(currentkey) + ", " + str(newlist)
                             newdata[key] = current[key]
                     else:
                         if str(currentkey).encode('utf8','ignore') != str(tesskey).encode('utf8','ignore'):

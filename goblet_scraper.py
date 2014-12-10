@@ -175,10 +175,10 @@ for key in lessons:
             new_data = TuitionUnit.compare(course.dump(),res)
             name = new_data[0]
             changes = new_data[1]
-            print "LOCAL: "
-            pprint.pprint(course.dump())
-            print "REMOTE: "
-            pprint.pprint(res)
+            #print "LOCAL: "
+            #pprint.pprint(course.dump())
+            #print "REMOTE: "
+            #pprint.pprint(res)
             if changes:
                 print "RESOURCE: Something has changed."
                 changes['id'] = name
