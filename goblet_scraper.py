@@ -28,12 +28,13 @@ def parse_data(page):
     topic_match = re.compile('topic-tags')
     audience_match = re.compile('audience-tags')
     portal_match = re.compile('training-portal')
-    response = urllib2.urlopen(root_url + page)
-    html = response.read()
+    #response = urllib2.urlopen(root_url + page)
+    #html = response.read()
     #pprint.pprint(html)
-    #with open ("goblet.html", "r") as myfile:
-    #    data=myfile.read().replace('\n', '')
-    tree = BeautifulSoup(html) # or data, if reading locally
+    with open ("goblet.html", "r") as myfile:
+        data=myfile.read().replace('\n', '')
+    #tree = BeautifulSoup(html) # or data, if reading locally
+    tree = BeautifulSoup(data) # or html, if reading remotely
     rows = tree.find_all('tbody')[0].find_all('tr')
     for row in rows:
         key = None
@@ -174,10 +175,10 @@ for key in lessons:
             new_data = TuitionUnit.compare(course.dump(),res)
             name = new_data[0]
             changes = new_data[1]
-            #print "LOCAL: "
-            #pprint.pprint(course.dump())
-            #print "REMOTE: "
-            #pprint.pprint(res)
+            print "LOCAL: "
+            pprint.pprint(course.dump())
+            print "REMOTE: "
+            pprint.pprint(res)
             if changes:
                 print "RESOURCE: Something has changed."
                 changes['id'] = name

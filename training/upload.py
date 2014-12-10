@@ -88,8 +88,8 @@ class CKANUploader:
                     return None
             else:
                 return None
-        except urllib2.HTTPError:
-            print "Check for existence failed."
+        except urllib2.HTTPError as e:
+            print "Check for existence failed: " + str(e)
             return None
 
     # These update methods should receive data which consist of a hash of only the
@@ -106,6 +106,8 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/resource_update'
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
+        print "DATA TO BE UPDATED: "
+        pprint.pprint(data)
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
