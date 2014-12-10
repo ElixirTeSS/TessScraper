@@ -20,6 +20,7 @@ class TuitionUnit:
         self.title = None
         self.url = None
 	self.notes = None
+	self.tags = None
         self.package_id = None # CKAN package ID
         self.parent_id = None # id of preceeding tutorial/class &c.
         self.resources = []
@@ -39,6 +40,7 @@ class TuitionUnit:
                 'title': self.title,
                 'url': self.url,
 		'notes': self.notes,
+		'tags': self.tags,
                 'parent_id': self.parent_id,
                 'doi': self.doi,
                 'format': self.format,
