@@ -53,17 +53,17 @@ class TuitionUnit:
 
     # The name has to be unique, not a special CKAN name (e.g. search), and no more than 100
     # characters in length, as well as containing only 0-9,a-z,- and _
-    def set_name(self,owner_org,name):
-        self.name = (owner_org + '-' + re.sub('[^0-9a-z_-]+', '_',name.lower()))[:99]
+    def set_name(self,owner_org,item_name):
+        self.name = (owner_org + '-' + re.sub('[^0-9a-z_-]+', '_',item_name.lower()))[:99]
 
     # Compare the current (under examination) version of the data with that which is already on TeSS.
     # Return each field which needs updating as a hash, so this can be passed to the update functions.
     @staticmethod
     def compare(current,tess):
-        return['',{}]
         dont_change = ['created',
                        'last_modified',
-                       'last_update']
+                       'last_update',
+                       'owner_org']
         newdata = {}
         for key in current:
             # This may need re-thinking - the data may be modified on TeSS, or on the originating site.
@@ -74,15 +74,14 @@ class TuitionUnit:
             # have some edits. If so, these should not be overwritten by the null values from the original.
             if key == None or key == 'None':
                 continue
-            print "KEY(1): " + str(key)
             tesskey = tess.get(key,None)
             currentkey = current[key]
             if tesskey and currentkey:
-                print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('utf8','ignore'))
-                if currentkey.encode('utf8','ignore') != tesskey.encode('utf8','ignore'):
-                    print "KEYDIFF"
+                #print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('utf8','ignore'))
+                if str(currentkey).encode('utf8','ignore') != str(tesskey).encode('utf8','ignore'):
+                    #print "KEYDIFF"
                     newdata[key] = current[key]
-        print "NEWDATA: " + str(newdata)
+        #print "NEWDATA: " + str(newdata)
         return [tess['id'].encode('ascii'),newdata]
 
 

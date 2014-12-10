@@ -135,22 +135,23 @@ for key in lessons:
     course.url = root_url + key
     course.owning_org = owner_org
     course.title = lessons[key]['name']
-    course.set_name(owner_org,lessons[key])
+    course.set_name(owner_org,lessons[key]['name'])
     course.last_modified = str(lessons[key]['last_modified'])
     course.created = str(lessons[key]['last_modified'])
     course.audience = lessons[key]['audience']
     course.keywords = lessons[key]['topics']
     course.format = 'html'
 
+    """
     dataset_id = do_upload_dataset(course)
     if dataset_id:
         do_upload_resource(course,dataset_id)
     else:
         print "Failed to create dataset so could not create resource: " + course.name
+    """
 
     # check to see if the dataset/resource exists
     # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
-    """
     data_exists = check_data(course)
     if data_exists:
         #print "LOCAL: "
@@ -193,7 +194,6 @@ for key in lessons:
         if dataset_id:
             do_upload_resource(course,dataset_id)
         else:
-            print "Failed to create dataset so could not create resource: " + course['name']
-     """
+            print "Failed to create dataset so could not create resource: " + course.name
 
 

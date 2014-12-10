@@ -63,20 +63,25 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_show?id='
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action + data['name']
-        print "DATA: "
-        pprint.pprint(data)
         print "Trying URL: " + url
         auth = conf['auth']
         if not auth:
             return
         request = urllib2.Request(url)
         request.add_header('Authorization', auth)
-        response = urllib2.urlopen(request)
-        assert response.code == 200
-        response_dict = json.loads(response.read())
-        if response_dict['success']:
-            return response_dict['result']
-        else:
+        try:
+            response = urllib2.urlopen(request)
+            if response.code == 200:
+                print "GOT 200"
+                response_dict = json.loads(response.read())
+                if response_dict['success']:
+                    return response_dict['result']
+                else:
+                    return None
+            else:
+                return None
+        except urllib2.HTTPError:
+            print "Check for existence failed."
             return None
 
     # These update methods should receive data which consist of a hash of only the
@@ -85,14 +90,14 @@ class CKANUploader:
     def update_dataset(data):
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_update'
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def update_resource(data):
         conf = CKANUploader.get_config()
         action = '/api/3/action/resource_update'
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
