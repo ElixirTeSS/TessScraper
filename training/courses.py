@@ -49,7 +49,8 @@ class TuitionUnit:
                 'keywords': self.keywords,
                 'difficulty': self.difficulty,
                 'owner_org': self.owning_org,
-                'package_id': self.package_id
+                'package_id': self.package_id,
+                'resources': self.resources
                 }
         if self.tags:
             data['tags'] = self.tags
