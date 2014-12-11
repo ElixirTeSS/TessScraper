@@ -4,13 +4,8 @@
 # http://docs.python-guide.org/en/latest/scenarios/scrape/
 # http://docs.ckan.org/en/latest/api/index.html#example-importing-datasets-with-the-ckan-api
 
-from lxml import html
-from bs4 import BeautifulSoup
 from training import *
-import requests
-import re
 import urllib2
-import urllib
 import json
 import pprint
 
