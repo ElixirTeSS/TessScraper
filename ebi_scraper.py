@@ -9,7 +9,6 @@
 from lxml import html
 from bs4 import BeautifulSoup
 from training import *
-from training import organizations
 import requests
 import re
 import urllib2
@@ -31,16 +30,16 @@ def parse_data(page):
     for link in links:
         item = link.find("div", {"class": "views-field-title"}).find('a')
         description = link.find("div", {"class": "views-field-field-course-desc-value"}).get_text()
-	try:
-       		topics = link.find("div", {"class": "views-field-tid"}).get_text()
-	except:
-		pass
-        href = item['href']
-        lessons[href] = {}
-        text= item.get_text()
-        lessons[href]['text'] = text
-        lessons[href]['description'] = description
-        lessons[href]['topics'] = extract_keywords(topics)
+    try:
+        topics = link.find("div", {"class": "views-field-tid"}).get_text()
+    except:
+        pass
+    href = item['href']
+    lessons[href] = {}
+    text= item.get_text()
+    lessons[href]['text'] = text
+    lessons[href]['description'] = description
+    lessons[href]['topics'] = extract_keywords(topics)
 
 
 # example:
@@ -57,8 +56,8 @@ def extract_keywords(text):
     for keyword in keywords:
         if keyword == '' or len(keyword) < 3:
             keywords.remove(keyword)
-	else:
-	    tags.append({"name": keyword})
+    else:
+        tags.append({"name": keyword})
     return tags
 
 # upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
@@ -82,44 +81,22 @@ def do_upload_resource(course,package_id):
 def do_upload_organization(org):
     try:
         org = CKANUploader.create_organization(org.dump())
-	return str(org['id'])
+        return str(org['id'])
     except Exception as e:
-	print "Error creating organization. Deets: " + str(e)
-
-	
+        print "Error creating organization. Deets: " + str(e)
 
 
 #Stub - to complete find li with url of last page and return its int here 
 def last_page_number():
     return 3
 
-class OrgUnit():
-    def __init__(self):
-        self.id = uuid.uuid4()
-        self.name = None
-        self.title = None
-        self.image_url = None
-        self.description = None
-        self.state = None
-
-    # CKAN expects some JSON to be sent when creating new objects.
-    def dump(self):
-        data = {#'id': str(self.id),
-                'name': self.name,
-                'title': self.title,
-                'image_url': self.image_url,
-                'description': self.description,
-                'state': self.state
-                }
-        return data
-
 def setup_organization():
-	organization = OrgUnit()
-	organization.title = 'European Bioinformatics Institute (EBI)'
-	organization.name = 'european-bioinformatics-institute-ebi'
-	organization.description = 'EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.'
-	organization.image_url = 'http://www.theconsultants-e.com/Libraries/Clients/European_Bioinformatics_Institute.sflb.ashx'
-	do_upload_organization(organization)
+    organization = OrgUnit()
+    organization.title = 'European Bioinformatics Institute (EBI)'
+    organization.name = 'european-bioinformatics-institute-ebi'
+    organization.description = 'EMBL-EBI provides freely available data from life science experiments, performs basic research in computational biology and offers an extensive user training programme, supporting researchers in academia and industry.'
+    organization.image_url = 'http://www.theconsultants-e.com/Libraries/Clients/European_Bioinformatics_Institute.sflb.ashx'
+    do_upload_organization(organization)
 
 def scrape_page(page):
     parse_data(page)
