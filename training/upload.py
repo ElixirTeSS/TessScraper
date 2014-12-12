@@ -18,14 +18,22 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_create'
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
-        return CKANUploader.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def create_resource(data):
         conf = CKANUploader.get_config()
         action = '/api/3/action/resource_create'
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
-        return CKANUploader.__do_upload(data,url)
+        return CKANUploader.__do_upload(data,url,conf)
+
+    @staticmethod
+    def create_organization(data):
+	conf = CKANUploader.get_config()
+	action = '/api/3/action/organization_create'
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
+        return CKANUploader.__do_upload(data,url,conf)
+	
 
     @staticmethod
     def __do_upload(data,url,conf):
@@ -33,13 +41,15 @@ class CKANUploader:
         print "Trying URL: " + url
         data_string = urllib.quote(json.dumps(data))
         #pprint.pprint(data_string)
+        #pprint.pprint(conf)
 
-        api = conf['api']
-        if not api:
+        auth = conf['auth']
+        if not auth:
+            print "API string missing!"
             return
 
         request = urllib2.Request(url)
-        request.add_header('Authorization', api)
+        request.add_header('Authorization', auth)
 
         # Make the HTTP request - check the apache logs to see the reason for any crashes
         #print "DATA: "
@@ -61,17 +71,25 @@ class CKANUploader:
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_show?id='
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action + data['name']
-        api = conf['api']
-        if not api:
+        print "Trying URL: " + url
+        auth = conf['auth']
+        if not auth:
             return
         request = urllib2.Request(url)
-        request.add_header('Authorization', api)
-        response = urllib2.urlopen(request)
-        assert response.code == 200
-        response_dict = json.loads(response.read())
-        if response_dict['success']:
-            return response_dict['result']
-        else:
+        request.add_header('Authorization', auth)
+        try:
+            response = urllib2.urlopen(request)
+            if response.code == 200:
+                print "GOT 200"
+                response_dict = json.loads(response.read())
+                if response_dict['success']:
+                    return response_dict['result']
+                else:
+                    return None
+            else:
+                return None
+        except urllib2.HTTPError as e:
+            print "Check for existence failed: " + str(e)
             return None
 
     # These update methods should receive data which consist of a hash of only the
@@ -80,18 +98,18 @@ class CKANUploader:
     def update_dataset(data):
         conf = CKANUploader.get_config()
         action = '/api/3/action/package_update'
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
     def update_resource(data):
         conf = CKANUploader.get_config()
         action = '/api/3/action/resource_update'
-        url = CKANUploader.protocol + '://' + CKANUploader.host + action
+        url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url,conf)
 
     @staticmethod
-    def __do_update(data,url):
+    def __do_update(data,url,conf):
         pass
 
 
@@ -102,7 +120,7 @@ class CKANUploader:
         try:
             Config.read('uploader_config.txt')
         except error_to_catch:
-            print "Can't open api file: " + CKANUploader.auth
+            print "Can't open config file."
             return None
 
         host = Config.get('Main','host')

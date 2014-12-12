@@ -1,3 +1,5 @@
 .idea
 api.txt
 ~$*
+training/*.pyc
+uploader_config.txt

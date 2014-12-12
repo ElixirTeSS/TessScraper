@@ -61,7 +61,7 @@ for key in lessons:
     course = Tutorial()
     course.url = key
     course.title = lessons[key]
-    course.name = re.sub('[^0-9a-z_-]+', '_',lessons[key].lower())[:99]
+    course.set_name(owner_org,lessons[key])
     course.owning_org = owner_org
     course.format = 'html'
     pprint.pprint(course.dump())
