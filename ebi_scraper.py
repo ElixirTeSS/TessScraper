@@ -29,19 +29,24 @@ def parse_data(page):
     response = urllib2.urlopen(root_url + page)
     tree = BeautifulSoup(response.read())
     links = tree.find("div", {"class": "item-list"}).find_all('ul')[0].find_all('li')
+    count = 1
     for link in links:
         item = link.find("div", {"class": "views-field-title"}).find('a')
         description = link.find("div", {"class": "views-field-field-course-desc-value"}).get_text()
-    try:
-        topics = link.find("div", {"class": "views-field-tid"}).get_text()
-    except:
-        pass
-    href = item['href']
-    lessons[href] = {}
-    text= item.get_text()
-    lessons[href]['text'] = text
-    lessons[href]['description'] = description
-    lessons[href]['topics'] = extract_keywords(topics)
+        count += 1
+        try:
+            topics = link.find("div", {"class": "views-field-tid"}).get_text()
+
+            href = item['href']
+            lessons[href] = {}
+            text= item.get_text()
+            lessons[href]['text'] = text
+            lessons[href]['description'] = description
+            lessons[href]['topics'] = extract_keywords(topics)
+
+        except:
+            pass
+
 
 
 # example:
@@ -58,8 +63,8 @@ def extract_keywords(text):
     for keyword in keywords:
         if keyword == '' or len(keyword) < 3:
             keywords.remove(keyword)
-    else:
-        tags.append({"name": keyword})
+        else:
+            tags.append({"name": re.sub(r'\W+', '', keyword)})
     return tags
 
 # upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
@@ -67,6 +72,8 @@ def extract_keywords(text):
 # of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
 def do_upload_dataset(course):
     try:
+        print "COURSE: "
+        pprint.pprint(course.dump())
         dataset = CKANUploader.create_dataset(course.dump())
         return str(dataset['id'])
     except:
@@ -125,55 +132,60 @@ def scrape_page(page):
         #else:
         #    print "Failed to create dataset so could not create resource: " + course.name
            # check to see if the dataset/resource exists
-    # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
-    data_exists = CKANUploader.check_data(course)
-    if data_exists:
-        #print "LOCAL: "
-        #pprint.pprint(course.dump())
-        #print "REMOTE: "
-        #pprint.pprint(data_exists)
-        new_data = TuitionUnit.compare(course.dump(),data_exists)
-        name = new_data[0]
-        changes = new_data[1]
-        if changes:
-            print "DATASET: Something has changed."
-            changes['id'] = name
-            updated = CKANUploader.update_dataset(changes)
-            if updated:
-                print "Package updated (1)."
-            #pprint.pprint(updated)
-        else:
-            print "DATASET: No change."
-        course.name = course.name + "-link"
-        for res in data_exists['resources']:
-            # update all the things
-            new_data = TuitionUnit.compare(course.dump(),res)
-            name = new_data[0]
-            changes = new_data[1]
+        # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
+        data_exists = CKANUploader.check_data(course)
+        if data_exists:
             #print "LOCAL: "
             #pprint.pprint(course.dump())
             #print "REMOTE: "
-            #pprint.pprint(res)
+            #pprint.pprint(data_exists)
+            new_data = TuitionUnit.compare(course.dump(),data_exists)
+            name = new_data[0]
+            changes = new_data[1]
             if changes:
-                print "RESOURCE: Something has changed."
+                print "DATASET: Something has changed."
                 changes['id'] = name
-                updated = CKANUploader.update_resource(changes)
+                updated = CKANUploader.update_dataset(changes)
                 if updated:
-                    print "Package updated (2)."
+                    print "Package updated (1)."
                 #pprint.pprint(updated)
             else:
-                print "RESOURCE: No change."
-                dataset_id = data_exists['id']
-                do_upload_resource(course,dataset_id)
+                print "DATASET: No change."
+            #course.name = course.name + "-link"
+            for res in data_exists['resources']:
+                # update all the things
+                new_data = TuitionUnit.compare(course.dump(),res)
+                #print "NEW DATA: "
+                #pprint.pprint(new_data)
+                name = new_data[0]
+                changes = new_data[1]
+                #print "LOCAL: "
+                #pprint.pprint(course.dump())
+                #print "REMOTE: "
+                #pprint.pprint(res)
+                if changes:
+                    print "RESOURCE: Something has changed."
+                    pprint.pprint(changes)
+                    changes['id'] = name
+                    changes['url'] = course.dump()['url']
+                    updated = CKANUploader.update_resource(changes)
+                    if updated:
+                        print "Package updated (2)."
+                    #pprint.pprint(updated)
+                else:
+                    print "RESOURCE: No change."
+                    #dataset_id = data_exists['id']
+                    #do_upload_resource(course,dataset_id)
 
-    else:
-        # If neither exists then they should be created.
-        print "Found nothing. Creating."
-        dataset_id = do_upload_dataset(course)
-        if dataset_id:
-            do_upload_resource(course,dataset_id)
         else:
-            print "Failed to create dataset so could not create resource: " + course.name
+            # If neither exists then they should be created.
+            print "Found nothing. Creating."
+            dataset_id = do_upload_dataset(course)
+            if dataset_id:
+                print "Creating resource: " + str(dataset_id)
+                do_upload_resource(course,dataset_id)
+            else:
+                print "Failed to create dataset so could not create resource: " + course.name
 
 
 #setup_organization()

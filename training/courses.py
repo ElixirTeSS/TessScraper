@@ -21,7 +21,7 @@ class TuitionUnit:
         self.title = None
         self.url = None
         self.notes = None
-        self.tags = None
+        self.tags = []
         self.package_id = None # CKAN package ID
         self.parent_id = None # id of preceeding tutorial/class &c.
         self.resources = []
@@ -106,7 +106,9 @@ class TuitionUnit:
                             #print "C,T: " + str(currentkey) + ", " + str(newlist)
                             newdata[key] = current[key]
                     else:
-                        if str(currentkey).encode('utf8','ignore') != str(tesskey).encode('utf8','ignore'):
+                        print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('utf8','ignore'))
+                        #if str(currentkey).encode('utf8','ignore') != str(tesskey).encode('utf8','ignore'):
+                        if str(currentkey.encode('utf8','ignore')) != str(tesskey.encode('utf8','ignore')):
                             #print "C,T: " + str(currentkey).encode('utf8','ignore') + ", " + str(tesskey).encode('utf8','ignore')
                             newdata[key] = current[key]
         #print "NEWDATA: " + str(newdata)

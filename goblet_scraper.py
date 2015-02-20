@@ -143,6 +143,8 @@ for key in lessons:
     course.keywords = lessons[key]['topics']
     course.format = 'html'
 
+    print "URL: " + course.url
+
     """
     dataset_id = do_upload_dataset(course)
     if dataset_id:
@@ -153,7 +155,7 @@ for key in lessons:
 
     # check to see if the dataset/resource exists
     # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
-    data_exists = check_data(course)
+    data_exists = CKANUploader.check_data(course)
     if data_exists:
         #print "LOCAL: "
         #pprint.pprint(course.dump())
@@ -166,10 +168,10 @@ for key in lessons:
             print "DATASET: Something has changed."
             changes['id'] = name
             updated = CKANUploader.update_dataset(changes)
-            pprint.pprint(updated)
+            #pprint.pprint(updated)
         else:
             print "DATASET: No change."
-        course.name = course.name + "-link"
+        #course.name = course.name + "-link"
         for res in data_exists['resources']:
             # update all the things
             new_data = TuitionUnit.compare(course.dump(),res)
@@ -182,6 +184,8 @@ for key in lessons:
             if changes:
                 print "RESOURCE: Something has changed."
                 changes['id'] = name
+                print "CHANGES: "
+                pprint.pprint(changes)
                 updated = CKANUploader.update_resource(changes)
                 pprint.pprint(updated)
             else:
