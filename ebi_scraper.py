@@ -72,7 +72,6 @@ def extract_keywords(text):
 # of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
 def do_upload_dataset(course):
     try:
-        print "COURSE: "
         pprint.pprint(course.dump())
         dataset = CKANUploader.create_dataset(course.dump())
         return str(dataset['id'])
@@ -122,60 +121,46 @@ def scrape_page(page):
 
         course.owning_org = owner_org
         course.format = 'html'
-        #pprint.pprint(course.dump())
 
-        # Upload at present with no checking.
-        #dataset_id = do_upload_dataset(course)
-        #print "ID: " + str(dataset_id)
-        #if dataset_id:
-        #    do_upload_resource(course,dataset_id)
-        #else:
-        #    print "Failed to create dataset so could not create resource: " + course.name
-           # check to see if the dataset/resource exists
-        # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
+        # Before attempting to create anything we need to check if the resource/dataset already exists, updating it
+        # as and where necessary.
+
         data_exists = CKANUploader.check_data(course)
         if data_exists:
-            #print "LOCAL: "
-            #pprint.pprint(course.dump())
-            #print "REMOTE: "
-            #pprint.pprint(data_exists)
             new_data = TuitionUnit.compare(course.dump(),data_exists)
             name = new_data[0]
             changes = new_data[1]
             if changes:
                 print "DATASET: Something has changed."
-                changes['id'] = name
-                updated = CKANUploader.update_dataset(changes)
+                # CKAN insists that for an update the _entire_ dict is uploaded again, which sucks.
+                # Therefore, one must edit the existing one by applying the changes to it.
+                update_values = course.dump()
+                for key,value in changes.iteritems():
+                       update_values[key] = value
+                updated = CKANUploader.update_dataset(update_values)
                 if updated:
                     print "Package updated (1)."
-                #pprint.pprint(updated)
             else:
                 print "DATASET: No change."
-            #course.name = course.name + "-link"
             for res in data_exists['resources']:
                 # update all the things
                 new_data = TuitionUnit.compare(course.dump(),res)
-                #print "NEW DATA: "
-                #pprint.pprint(new_data)
                 name = new_data[0]
                 changes = new_data[1]
-                #print "LOCAL: "
-                #pprint.pprint(course.dump())
-                #print "REMOTE: "
-                #pprint.pprint(res)
                 if changes:
                     print "RESOURCE: Something has changed."
                     pprint.pprint(changes)
-                    changes['id'] = name
-                    changes['url'] = course.dump()['url']
-                    updated = CKANUploader.update_resource(changes)
+                    # CKAN insists that for an update the _entire_ dict is uploaded again, which sucks.
+                    # Therefore, one must edit the existing one by applying the changes to it.
+                    update_values = course.dump()
+                    for key,value in changes.iteritems():
+                       update_values[key] = value
+
+                    updated = CKANUploader.update_resource(update_values)
                     if updated:
                         print "Package updated (2)."
-                    #pprint.pprint(updated)
                 else:
                     print "RESOURCE: No change."
-                    #dataset_id = data_exists['id']
-                    #do_upload_resource(course,dataset_id)
 
         else:
             # If neither exists then they should be created.

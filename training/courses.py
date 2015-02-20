@@ -69,6 +69,7 @@ class TuitionUnit:
     @staticmethod
     def compare(current,tess):
         dont_change = ['id',
+                       'name',
                        'created',
                        'last_modified',
                        'last_update',
@@ -77,20 +78,20 @@ class TuitionUnit:
         for key in current:
             # This may need re-thinking - the data may be modified on TeSS, or on the originating site.
             # How should be choose which to keep?
+            # The answer is apparently to discard local changes.
             if key in dont_change:
                 continue
             # It's likely that scraping a website won't give me all the information we need, and TeSS may
             # have some edits. If so, these should not be overwritten by the null values from the original.
-            # Overwriting with non-null entries should not be a problem, though.
+            # Overwriting with non-null entries should not be a problem, though (see above).
             if key == None or key == 'None':
                 continue
             tesskey = tess.get(key,None)
-            #print "TESSKEY: " + str(tesskey)
             currentkey = current[key]
             if tesskey and currentkey:
                 # Format can be created in lower case but comes back from the server in upper case...
                 if key == 'format':
-                    if str(currentkey).encode('utf8','ignore').lower() != str(tesskey).encode('utf8','ignore').lower():
+                    if str(currentkey).encode('utf-8','ignore').lower() != str(tesskey).encode('utf-8','ignore').lower():
                         #print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('ascii'))
                         newdata[key] = current[key]
                 else:
@@ -99,18 +100,17 @@ class TuitionUnit:
                     if isinstance(currentkey,list):
                         newlist = []
                         for value in ast.literal_eval(str(tesskey)):
-                            #print "VAL: " + str(value)
-                            #newlist.append(value.encode('ascii','ignore'))
                             newlist.append(value)
                         if currentkey != newlist:
-                            #print "C,T: " + str(currentkey) + ", " + str(newlist)
                             newdata[key] = current[key]
                     else:
-                        print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('utf8','ignore'))
-                        #if str(currentkey).encode('utf8','ignore') != str(tesskey).encode('utf8','ignore'):
-                        if str(currentkey.encode('utf8','ignore')) != str(tesskey.encode('utf8','ignore')):
-                            #print "C,T: " + str(currentkey).encode('utf8','ignore') + ", " + str(tesskey).encode('utf8','ignore')
-                            newdata[key] = current[key]
+                        # I can't work out how to get around these PITA encoding issues...
+                        try:
+                            print "C,T: " + str(currentkey) + ", " + str(tesskey)
+                            if str(currentkey) != str(tesskey):
+                                newdata[key] = current[key]
+                        except UnicodeEncodeError, e:
+                            print "More unicode nuisances: " + str(e)
         #print "NEWDATA: " + str(newdata)
         return [tess['id'].encode('ascii'),newdata]
 
