@@ -29,11 +29,11 @@ class CKANUploader:
 
     @staticmethod
     def create_organization(data):
-	conf = CKANUploader.get_config()
-	action = '/api/3/action/organization_create'
+        conf = CKANUploader.get_config()
+        action = '/api/3/action/organization_create'
         url = conf['protocol'] + '://' + conf['host'] + ':' + conf['port'] + action
         return CKANUploader.__do_upload(data,url,conf)
-	
+
 
     @staticmethod
     def __do_upload(data,url,conf):
@@ -63,7 +63,7 @@ class CKANUploader:
 
         # package_create returns the created package as its result.
         created_package = response_dict['result']
-        pprint.pprint(created_package)
+        #pprint.pprint(created_package)
         return created_package
 
     @staticmethod
@@ -132,3 +132,13 @@ class CKANUploader:
                 'port':port,
                 'protocol':protocol,
                 'auth':auth}
+
+    @staticmethod
+    def check_data(course):
+        result = CKANUploader.check_dataset(course.dump())
+        if result:
+            name = result['name']
+            print "Got dataset: " + name
+            return result
+        else:
+            return None

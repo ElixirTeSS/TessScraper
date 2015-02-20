@@ -41,7 +41,10 @@ class TuitionUnit:
                 'title': self.title,
                 'url': self.url,
                 'notes': self.notes,
+                'tags': self.tags,
+                'package_id': self.package_id,
                 'parent_id': self.parent_id,
+                'resources': self.resources,
                 'doi': self.doi,
                 'format': self.format,
                 'created': self.created,
@@ -78,9 +81,11 @@ class TuitionUnit:
                 continue
             # It's likely that scraping a website won't give me all the information we need, and TeSS may
             # have some edits. If so, these should not be overwritten by the null values from the original.
+            # Overwriting with non-null entries should not be a problem, though.
             if key == None or key == 'None':
                 continue
             tesskey = tess.get(key,None)
+            #print "TESSKEY: " + str(tesskey)
             currentkey = current[key]
             if tesskey and currentkey:
                 # Format can be created in lower case but comes back from the server in upper case...
@@ -93,9 +98,10 @@ class TuitionUnit:
                     # looks like a list. Therefore, to compare it with a list one must convert it into one.
                     if isinstance(currentkey,list):
                         newlist = []
-                        for value in ast.literal_eval(tesskey):
-                            print "VAL: " + str(value)
-                            newlist.append(value.encode('ascii','ignore'))
+                        for value in ast.literal_eval(str(tesskey)):
+                            #print "VAL: " + str(value)
+                            #newlist.append(value.encode('ascii','ignore'))
+                            newlist.append(value)
                         if currentkey != newlist:
                             #print "C,T: " + str(currentkey) + ", " + str(newlist)
                             newdata[key] = current[key]

@@ -5,6 +5,8 @@
 # http://docs.ckan.org/en/latest/api/index.html#example-importing-datasets-with-the-ckan-api
 
 # BROKEN: HTTP error 409 caused by stuff on line 118
+# The breakage is caused by attemting to upload an existing record; this requires that a check be performed
+# first. Unfortuantely, the check is broken.
 
 from lxml import html
 from bs4 import BeautifulSoup
@@ -74,7 +76,10 @@ def do_upload_resource(course,package_id):
     try:
         course.package_id = package_id
         course.name = course.name + "-link"
-        CKANUploader.create_resource(course.dump())
+        created = CKANUploader.create_resource(course.dump())
+        if created:
+            print "Resource created!"
+
     except Exception as e:
         print "Error whilst uploading! Details: " + str(e)
 
@@ -83,7 +88,7 @@ def do_upload_organization(org):
         org = CKANUploader.create_organization(org.dump())
         return str(org['id'])
     except Exception as e:
-        print "Error creating organization. Deets: " + str(e)
+        print "Error creating organization: " + str(e)
 
 
 #Stub - to complete find li with url of last page and return its int here 
@@ -110,24 +115,75 @@ def scrape_page(page):
 
         course.owning_org = owner_org
         course.format = 'html'
-        pprint.pprint(course.dump())
+        #pprint.pprint(course.dump())
 
         # Upload at present with no checking.
+        #dataset_id = do_upload_dataset(course)
+        #print "ID: " + str(dataset_id)
+        #if dataset_id:
+        #    do_upload_resource(course,dataset_id)
+        #else:
+        #    print "Failed to create dataset so could not create resource: " + course.name
+           # check to see if the dataset/resource exists
+    # N.B. this checks all at once, which should work because we're only creating one resource per dataset.
+    data_exists = CKANUploader.check_data(course)
+    if data_exists:
+        #print "LOCAL: "
+        #pprint.pprint(course.dump())
+        #print "REMOTE: "
+        #pprint.pprint(data_exists)
+        new_data = TuitionUnit.compare(course.dump(),data_exists)
+        name = new_data[0]
+        changes = new_data[1]
+        if changes:
+            print "DATASET: Something has changed."
+            changes['id'] = name
+            updated = CKANUploader.update_dataset(changes)
+            if updated:
+                print "Package updated (1)."
+            #pprint.pprint(updated)
+        else:
+            print "DATASET: No change."
+        course.name = course.name + "-link"
+        for res in data_exists['resources']:
+            # update all the things
+            new_data = TuitionUnit.compare(course.dump(),res)
+            name = new_data[0]
+            changes = new_data[1]
+            #print "LOCAL: "
+            #pprint.pprint(course.dump())
+            #print "REMOTE: "
+            #pprint.pprint(res)
+            if changes:
+                print "RESOURCE: Something has changed."
+                changes['id'] = name
+                updated = CKANUploader.update_resource(changes)
+                if updated:
+                    print "Package updated (2)."
+                #pprint.pprint(updated)
+            else:
+                print "RESOURCE: No change."
+                dataset_id = data_exists['id']
+                do_upload_resource(course,dataset_id)
+
+    else:
+        # If neither exists then they should be created.
+        print "Found nothing. Creating."
         dataset_id = do_upload_dataset(course)
-        print "ID: " + str(dataset_id)
         if dataset_id:
             do_upload_resource(course,dataset_id)
         else:
             print "Failed to create dataset so could not create resource: " + course.name
 
 
-setup_organization()
+#setup_organization()
 # each individual tutorial
 first_page = '/training/online/course-list'
 scrape_page(first_page)
 
 for page_no in range(1, last_page_number()):
     page = first_page + '?page=' + str(page_no)
-    print "\n\n\n\n\n" + page + "\n\n\n\n\n" 
+    print "\n\n\n\n\n" + page + "\n\n\n\n\n"
+    print "Scraping page: " + str(page_no)
     scrape_page(page)
 

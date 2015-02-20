@@ -78,14 +78,14 @@ def do_upload_resource(course,package_id):
         print "Error whilst uploading! Details: " + str(e)
 
 
-def check_data(course):
-    result = CKANUploader.check_dataset(course.dump())
-    if result:
-        name = result['name']
-        print "Got dataset: " + name
-        return result
-    else:
-        return None
+#def check_data(course):
+#    result = CKANUploader.check_dataset(course.dump())
+#    if result:
+#        name = result['name']
+#        print "Got dataset: " + name
+#        return result
+#    else:
+#        return None
 
 # This monstrosity would not be required if we had a proper feed
 # with the actual date in it.
