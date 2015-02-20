@@ -181,7 +181,7 @@ def scrape_page(page):
 first_page = '/training/online/course-list'
 scrape_page(first_page)
 
-for page_no in range(1, last_page_number()):
+for page_no in range(1, last_page_number() + 1):
     page = first_page + '?page=' + str(page_no)
     print "\n\n\n\n\n" + page + "\n\n\n\n\n"
     print "Scraping page: " + str(page_no)
