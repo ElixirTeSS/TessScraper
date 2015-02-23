@@ -73,6 +73,7 @@ class TuitionUnit:
                        'created',
                        'last_modified',
                        'last_update',
+                       'package_id',
                        'owner_org']
         newdata = {}
         for key in current:
@@ -80,18 +81,20 @@ class TuitionUnit:
             # How should be choose which to keep?
             # The answer is apparently to discard local changes.
             if key in dont_change:
+                print "DON'T CHANGE: " + key
                 continue
             # It's likely that scraping a website won't give me all the information we need, and TeSS may
             # have some edits. If so, these should not be overwritten by the null values from the original.
             # Overwriting with non-null entries should not be a problem, though (see above).
             if key == None or key == 'None':
                 continue
-            tesskey = tess.get(key,None)
-            currentkey = current[key]
+            tesskey = unicode(tess.get(key,None))
+            currentkey = unicode(current[key])
             if tesskey and currentkey:
                 # Format can be created in lower case but comes back from the server in upper case...
                 if key == 'format':
-                    if str(currentkey).encode('utf-8','ignore').lower() != str(tesskey).encode('utf-8','ignore').lower():
+                    if currentkey.lower() != tesskey.lower():
+                    #if str(currentkey).encode('utf-8','ignore').lower() != str(tesskey).encode('utf-8','ignore').lower():
                         #print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('ascii'))
                         newdata[key] = current[key]
                 else:
@@ -106,8 +109,8 @@ class TuitionUnit:
                     else:
                         # I can't work out how to get around these PITA encoding issues...
                         try:
-                            print "C,T: " + str(currentkey) + ", " + str(tesskey)
-                            if str(currentkey) != str(tesskey):
+                            print "C,T: " + currentkey + ", " + tesskey
+                            if currentkey != tesskey:
                                 newdata[key] = current[key]
                         except UnicodeEncodeError, e:
                             print "More unicode nuisances: " + str(e)

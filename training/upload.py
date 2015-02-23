@@ -83,6 +83,7 @@ class CKANUploader:
                 print "GOT 200"
                 response_dict = json.loads(response.read())
                 if response_dict['success']:
+                    print "CHECKING RESULT: " + str(response_dict['result'])
                     return response_dict['result']
                 else:
                     return None

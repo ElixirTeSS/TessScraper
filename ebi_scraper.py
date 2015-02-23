@@ -135,8 +135,12 @@ def scrape_page(page):
                 # CKAN insists that for an update the _entire_ dict is uploaded again, which sucks.
                 # Therefore, one must edit the existing one by applying the changes to it.
                 update_values = course.dump()
+
                 for key,value in changes.iteritems():
                        update_values[key] = value
+
+                package_id = update_values['name']
+                update_values['id'] = name
                 updated = CKANUploader.update_dataset(update_values)
                 if updated:
                     print "Package updated (1)."
@@ -145,6 +149,8 @@ def scrape_page(page):
             for res in data_exists['resources']:
                 # update all the things
                 new_data = TuitionUnit.compare(course.dump(),res)
+                print "NEW DATA: "
+                pprint.pprint(new_data)
                 name = new_data[0]
                 changes = new_data[1]
                 if changes:
@@ -154,7 +160,12 @@ def scrape_page(page):
                     # Therefore, one must edit the existing one by applying the changes to it.
                     update_values = course.dump()
                     for key,value in changes.iteritems():
-                       update_values[key] = value
+                        update_values[key] = value
+
+                    update_values['id'] = name
+                    update_values['package_id'] = package_id
+                    print "UPDATE_VALUES: "
+                    pprint.pprint(update_values)
 
                     updated = CKANUploader.update_resource(update_values)
                     if updated:
