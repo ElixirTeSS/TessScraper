@@ -59,33 +59,6 @@ def parse_data(page):
         lessons[key] = {'audience':audience, 'topics':topics, 'last_modified':date_modified, 'name':name}
 
 
-# upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
-# Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
-# of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
-def do_upload_dataset(course):
-    try:
-        dataset = CKANUploader.create_dataset(course.dump())
-        return str(dataset['id'])
-    except:
-        return None
-
-def do_upload_resource(course,package_id):
-    try:
-        course.package_id = package_id
-        course.name = course.name + "-link"
-        CKANUploader.create_resource(course.dump())
-    except Exception as e:
-        print "Error whilst uploading! Details: " + str(e)
-
-
-#def check_data(course):
-#    result = CKANUploader.check_dataset(course.dump())
-#    if result:
-#        name = result['name']
-#        print "Got dataset: " + name
-#        return result
-#    else:
-#        return None
 
 # This monstrosity would not be required if we had a proper feed
 # with the actual date in it.
@@ -145,55 +118,8 @@ for key in lessons:
 
     # Before attempting to create anything we need to check if the resource/dataset already exists, updating it
     # as and where necessary.
+    CKANUploader.create_or_update(course)
 
-    data_exists = CKANUploader.check_data(course)
-    if data_exists:
-        new_data = TuitionUnit.compare(course.dump(),data_exists)
-        name = new_data[0]
-        changes = new_data[1]
-        if changes:
-            print "DATASET: Something has changed."
-            # CKAN insists that for an update the _entire_ dict is uploaded again, which sucks.
-            # Therefore, one must edit the existing one by applying the changes to it.
-            update_values = course.dump()
-            for key,value in changes.iteritems():
-                   update_values[key] = value
-            updated = CKANUploader.update_dataset(update_values)
-            if updated:
-                print "Package updated (1)."
-        else:
-            print "DATASET: No change."
-        for res in data_exists['resources']:
-            # update all the things
-            new_data = TuitionUnit.compare(course.dump(),res)
-            name = new_data[0]
-            changes = new_data[1]
-            if changes:
-                print "RESOURCE: Something has changed."
-                pprint.pprint(changes)
-                # CKAN insists that for an update the _entire_ dict is uploaded again, which sucks.
-                # Therefore, one must edit the existing one by applying the changes to it.
-                update_values = course.dump()
-                print "ONE"
-                pprint.pprint(update_values)
-                for key,value in changes.iteritems():
-                   update_values[key] = value
-                print "TWO"
-                pprint.pprint(update_values)
-                updated = CKANUploader.update_resource(update_values)
-                if updated:
-                    print "Package updated (2)."
-            else:
-                print "RESOURCE: No change."
 
-    else:
-        # If neither exists then they should be created.
-        print "Found nothing. Creating."
-        dataset_id = do_upload_dataset(course)
-        if dataset_id:
-            print "Creating resource: " + str(dataset_id)
-            do_upload_resource(course,dataset_id)
-        else:
-            print "Failed to create dataset so could not create resource: " + course.name
 
 

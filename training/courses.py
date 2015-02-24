@@ -37,23 +37,24 @@ class TuitionUnit:
     # CKAN expects some JSON to be sent when creating new objects.
     def dump(self):
         data = {#'id': str(self.id),
-                'name': self.name,
-                'title': self.title,
-                'url': self.url,
-                'notes': self.notes,
+                'name': self.name.decode('utf-8') if self.name else None,
+                'title': self.title.decode('utf-8') if self.title else None,
+                'url': self.url.decode('utf-8') if self.url else None,
+                'notes': self.notes.encode('utf-8') if self.notes else None,
+                #'tags': self.tags, #[x.decode('utf-8') if x else None for x in self.tags],
+                #'tags': self.tags.update({(x,y.decode('utf-8')) for x,y in self.tags.items()}),
                 'tags': self.tags,
-                'package_id': self.package_id,
-                'parent_id': self.parent_id,
-                'resources': self.resources,
-                'doi': self.doi,
-                'format': self.format,
-                'created': self.created,
-                'last_modified': self.last_modified,
-                'keywords': self.keywords,
-                'difficulty': self.difficulty,
-                'owner_org': self.owning_org,
-                'package_id': self.package_id,
-                'resources': self.resources
+                'package_id': self.package_id.decode('utf-8') if self.package_id else None,
+                'parent_id': self.parent_id.decode('utf-8') if self.parent_id else None,
+                'resources': [x.decode('utf-8') if x else None for x in self.resources],
+                'doi': self.doi.decode('utf-8') if self.doi else None,
+                'format': self.format.decode('utf-8') if self.format else None,
+                'created': self.created.decode('utf-8') if self.created else None,
+                'last_modified': self.last_modified.decode('utf-8') if self.last_modified else None,
+                'keywords': [x.decode('utf-8') if x else None for x in self.keywords],
+                'difficulty': self.difficulty.decode('utf-8') if self.difficulty else None,
+                'owner_org': self.owning_org.decode('utf-8') if self.owning_org else None,
+                'package_id': self.package_id.decode('utf-8') if self.package_id else None
                 }
         if self.tags:
             data['tags'] = self.tags
@@ -74,8 +75,10 @@ class TuitionUnit:
                        'last_modified',
                        'last_update',
                        'package_id',
+                       'tags', # This should be added back in when the
                        'owner_org']
-        newdata = {}
+        newdata = tess
+        changed = False
         for key in current:
             # This may need re-thinking - the data may be modified on TeSS, or on the originating site.
             # How should be choose which to keep?
@@ -87,6 +90,7 @@ class TuitionUnit:
             # have some edits. If so, these should not be overwritten by the null values from the original.
             # Overwriting with non-null entries should not be a problem, though (see above).
             if key == None or key == 'None':
+                print "KEY: NONE"
                 continue
             tesskey = unicode(tess.get(key,None))
             currentkey = unicode(current[key])
@@ -96,6 +100,7 @@ class TuitionUnit:
                     if currentkey.lower() != tesskey.lower():
                     #if str(currentkey).encode('utf-8','ignore').lower() != str(tesskey).encode('utf-8','ignore').lower():
                         #print "C,T: " + str(currentkey.encode('utf8','ignore')) + ", " + str(tesskey.encode('ascii'))
+                        changed = True
                         newdata[key] = current[key]
                 else:
                     # The literal_eval here is because what comes back from CKAN is not a list but a string which
@@ -105,17 +110,23 @@ class TuitionUnit:
                         for value in ast.literal_eval(str(tesskey)):
                             newlist.append(value)
                         if currentkey != newlist:
+                            changed = True
                             newdata[key] = current[key]
                     else:
                         # I can't work out how to get around these PITA encoding issues...
                         try:
-                            print "C,T: " + currentkey + ", " + tesskey
+                            #print "C,T: " + currentkey + ", " + tesskey
                             if currentkey != tesskey:
+                                changed = True
                                 newdata[key] = current[key]
                         except UnicodeEncodeError, e:
                             print "More unicode nuisances: " + str(e)
         #print "NEWDATA: " + str(newdata)
-        return [tess['id'].encode('ascii'),newdata]
+        #return [tess['name'].encode('ascii'),tess['id'].encode('ascii'),newdata]
+        if changed:
+            return newdata
+        else:
+            return None
 
 
 # 6: Name of author

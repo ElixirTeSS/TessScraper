@@ -1,6 +1,7 @@
 __author__ = 'milo'
 
 import uuid
+from upload import CKANUploader
 
 class OrgUnit():
     def __init__(self):
@@ -21,3 +22,12 @@ class OrgUnit():
                 'state': self.state
                 }
         return data
+
+    @staticmethod
+    def upload_organisation(org):
+        try:
+            org = CKANUploader.create_organization(org.dump())
+            return str(org['id'])
+        except Exception as e:
+            print "Error creating organization: " + str(e)
+

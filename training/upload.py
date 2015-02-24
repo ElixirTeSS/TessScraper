@@ -6,6 +6,7 @@ import json
 import pprint
 
 import ConfigParser
+from courses import TuitionUnit
 
 
 # The purpose of this file is to flip out and incorporate the code for creating new resources
@@ -143,3 +144,48 @@ class CKANUploader:
             return result
         else:
             return None
+
+    # upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
+    # Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
+    # of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
+    @staticmethod
+    def create_or_update(course):
+        data_exists = CKANUploader.check_data(course)
+        if data_exists:
+            changes = TuitionUnit.compare(course.dump(),data_exists)
+            if changes:
+                print "DATASET: Something has changed."
+                # CKAN insists that for an update the _entire_ dict is uploaded again, which sucks.
+                # Therefore, one must edit the existing one by applying the changes to it.
+                updated = CKANUploader.update_dataset(changes)
+                if updated:
+                    print "Package updated."
+                    # Now update the resource
+                    for res in data_exists['resources']:
+                        res_changes = TuitionUnit.compare(course.dump(),res)
+                        if res_changes:
+                            res_updated = CKANUploader.update_resource(res_changes)
+                            if res_updated:
+                                print "Resource updated."
+            else:
+                print "DATASET: No change."
+
+        else:
+            # If neither exists then they should be created.
+            print "Found nothing. Creating."
+            try:
+                dataset = CKANUploader.create_dataset(course.dump())
+                return str(dataset['id'])
+            except:
+                print "Could not created dataset"
+            if dataset:
+                print "Creating resource: " + str(dataset['id'])
+                #do_upload_resource(course,dataset['id'])
+                try:
+                    course.package_id = dataset['id']
+                    course.name = course.name + "-link"
+                    CKANUploader.create_resource(course.dump())
+                except Exception as e:
+                    print "Error whilst uploading! Details: " + str(e)
+            else:
+                print "Failed to create dataset so could not create resource: " + course.name
