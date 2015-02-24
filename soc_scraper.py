@@ -35,28 +35,14 @@ def parse_data(page):
         if result:
             lessons[root_url + href] = title
 
-# upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
-# Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
-# of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
-def do_upload_dataset(course):
-    try:
-        dataset = CKANUploader.create_dataset(course.dump())
-        return str(dataset['id'])
-    except:
-        return None
-
-def do_upload_resource(course,package_id):
-    try:
-        course.package_id = package_id
-        course.name = course.name + "-link"
-        CKANUploader.create_resource(course.dump())
-    except Exception as e:
-        print "Error whilst uploading! Details: " + str(e)
-
 
 
 # each individual tutorial
 parse_data('lessons.html')
+
+print "LESSONS:"
+pprint.pprint(lessons)
+
 for key in lessons:
     course = Tutorial()
     course.url = key
@@ -66,15 +52,6 @@ for key in lessons:
     course.format = 'html'
     pprint.pprint(course.dump())
 
-    # Upload at present with no checking.
-    dataset_id = do_upload_dataset(course)
-    print "ID: " + str(dataset_id)
-    if dataset_id:
-        do_upload_resource(course,dataset_id)
-    else:
-        print "Failed to create dataset so could not create resource: " + course.name
-
-
-
+    CKANUploader.create_or_update(course)
 
 

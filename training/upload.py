@@ -173,6 +173,7 @@ class CKANUploader:
         else:
             # If neither exists then they should be created.
             print "Found nothing. Creating."
+            dataset = None
             try:
                 dataset = CKANUploader.create_dataset(course.dump())
                 return str(dataset['id'])

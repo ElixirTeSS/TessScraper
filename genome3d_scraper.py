@@ -44,6 +44,7 @@ def parse_data(page):
 # upload_dataset must return an id which has to be passed to upload_resource, so the resource can be linked to the dataset.
 # Therefore, the former returns None if nothing is created so that we can detect whether it has worked or not. In the case
 # of the upload_resource then the error can be returned here rather than in the rest of the script, as with upload_dataset.
+"""
 def do_upload_dataset(course):
     try:
         dataset = CKANUploader.create_dataset(course.dump())
@@ -67,6 +68,7 @@ def check_data(course):
         return result
     else:
         return None
+"""
 
 
 
@@ -81,11 +83,14 @@ for key in lessons:
     course.set_name(owner_org,lessons[key])
     course.owning_org = owner_org
     course.format = 'html'
+
+    CKANUploader.create_or_update(course)
+
+    """
     #print "COURSE: "
     #pprint.pprint(course.dump())
 
     # Upload at present with no checking.
-    """
     dataset_id = do_upload_dataset(course)
     print "ID: " + str(dataset_id)
     if dataset_id:
@@ -93,13 +98,13 @@ for key in lessons:
     else:
         print "Failed to create dataset so could not create resource: " + course.name
 
-    """
     existing = check_data(course)
     #print "EXISTING:"
     #pprint.pprint(existing)
     check = TuitionUnit.compare(course.dump(),existing)
     print "CHECK:"
     pprint.pprint(check)
+    """
 
 
 
