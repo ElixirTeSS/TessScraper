@@ -92,9 +92,10 @@ class TuitionUnit:
             if key == None or key == 'None':
                 print "KEY: NONE"
                 continue
-            tesskey = unicode(tess.get(key,None))
-            currentkey = unicode(current[key])
+            tesskey = tess.get(key,None)
+            currentkey = current[key]
             if tesskey and currentkey:
+                currentkey = currentkey.decode('utf-8')
                 # Format can be created in lower case but comes back from the server in upper case...
                 if key == 'format':
                     if currentkey.lower() != tesskey.lower():
